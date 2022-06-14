@@ -5,9 +5,11 @@ is_num <- function(x) is.numeric(x) && length(x) == 1
 
 is_bool <- function(x) is.logical(x) && length(x) == 1
 
-is_time <- function(x) is_str(x) && grep_iso_3339_date_time(x)
+is_time <- function(x)
+    inherits(x, "cql2_time") || (is_str(x) && grep_iso_3339_date_time(x))
 
-is_date <- function(x) is_str(x) && grep_iso_3339_date(x)
+is_date <- function(x)
+    inherits(x, "cql2_date") || (is_str(x) && grep_iso_3339_date(x))
 
 is_scalar <- function(x) {
     switch(class(x),
@@ -24,16 +26,17 @@ is_scalar <- function(x) {
 # 6.3.2 spatial data types ----
 
 
+
 # 6.3.3 temporal data types ----
 
 time <- function(x) {
     stopifnot(is_time(x))
-    structure(list(timestamp = x), class = "cql2_time")
+    structure(list(timestamp = unlist(x)), class = "cql2_time")
 }
 
 date <- function(x) {
     stopifnot(is_date(x))
-    structure(list(date = x), class = "cql2_date")
+    structure(list(date = unlist(x)), class = "cql2_date")
 }
 
 dotdot <- ".."
@@ -47,11 +50,13 @@ interval <- function(start = .., end = ..) {
     if (!is.null(end))
         stopifnot(is_date(end) || is_time(end))
     else end <- dotdot
-    structure(list(interval = list(start, end)), class = "cql2_interval")
+    structure(list(interval = list(unlist(start), unlist(end))),
+              class = "cql2_interval")
 }
 
+
 # 6.3.4 arrays ----
-is_lst <- function(x) is.list(x) && is.null(names(x))
+is_lst <- function(x) length(x) > 1 && is.null(names(x))
 
 lst <- function(...) {
     dots <- list(...)
@@ -71,6 +76,8 @@ prop <- function(x) {
     structure(list(property = x), class = "cql2_prop")
 }
 
+prop_name <- function(x) x$property
+
 func <- function(x) {
     rlang::new_function(
         args = rlang::exprs(... = ),
@@ -83,71 +90,136 @@ func <- function(x) {
     )
 }
 
+func_name <- function(x) x$`function`$name
+
+func_args <- function(x) x$`function`$args
+
 # 6.5 standard comparisons predicate ----
 
-
-# character representation ----
-curly <- function(x) paste0("{ ", paste(x, collapse = ", "), " }")
-bracket <- function(x) paste0("[ ", paste(x, collapse = ", "), " ]")
-quote <- function(x) paste0('"', x, '"')
-`%:%` <- function(x, y) paste0(x, ": ", y)
-
-#' @exportS3Method
-as.character.cql2_time <- function(x) paste0("TIMESTAMP('", unclass(x), "')")
-
-#' @exportS3Method
-as.character.cql2_date <- function(x) paste0("DATE('", unclass(x), "')")
-
-#' @exportS3Method
-as.character.cql2_interval <- function(x)
-    paste0("INTERVAL('", x$interval[[1]], "', '", x$interval[[2]], "')")
-
-#' @exportS3Method
-as.character.cql2_array <- function(x) bracket(lapply(x, paste0))
-
-#' @exportS3Method
-as.character.cql2_prop <- function(x)
-    curly(quote(names(x)) %:% quote(unname(unclass(x))))
-
-#' @exportS3Method
-as.character.cql2_func <- function(x)
-    curly(quote("function") %:% curly(c(
-        quote("name") %:% quote(x$`function`$name),
-        quote("args") %:% x$`function`$args
-    )))
-
-#' @exportS3Method
-print.cql2_time <- function(x) cat(paste0(x), sep = "")
-
-#' @exportS3Method
-print.cql2_date <- function(x) cat(paste(x), sep = "")
-
-#' @exportS3Method
-print.cql2_interval <- function(x) cat(paste(x), sep = "")
-
-#' @exportS3Method
-print.cql2_array <- function(x) cat(paste0(x), sep = "")
-
-#' @exportS3Method
-print.cql2_prop <- function(x) cat(paste0(x), sep = "")
-
-#' @exportS3Method
-print.cql2_func <- function(x) cat(paste0(x), sep = "")
-
-
-
 # convert to text ----
-
-to_cql2_text <- function(expr) UseMethod("to_cql2_text", expr)
-
-#' @exportS3Method
-to_cql2_text.character <- function(expr) {
-    escape(expr)
-}
+bracket <- function(x) paste0("[ ", x, " ]")
+text_quote <- function(x) paste0("'", x, "'")
+text_func <- function(name, args)
+    paste0(name, "(", paste0(lapply(args, to_text), collapse = ", "), ")")
 
 escape <- function(x) gsub("'", "''", x)
 
-unescape <- function(x) gsub("''", "'", x)
+to_text <- function(x) UseMethod("to_text", x)
+
+#' @exportS3Method
+to_text.character <- function(x) {
+    if (is_str(x))
+        text_quote(escape(x))
+    else if (is_lst(x))
+        bracket(paste0(lapply(x, to_text), collapse = ", "))
+}
+
+#' @exportS3Method
+to_text.numeric <- function(x) {
+    if (is_num(x))
+        x
+    else if (is_lst(x))
+        bracket(paste0(lapply(x, to_text), collapse = ", "))
+}
+
+#' @exportS3Method
+to_text.integer <- function(x) to_text.numeric(x)
+
+#' @exportS3Method
+to_text.logical <- function(x) {
+    if (is_bool(x))
+        if (x) "true" else "false"
+    else if (is_lst(x))
+        bracket(paste0(lapply(x, to_text), collapse = ", "))
+}
+
+#' @exportS3Method
+to_text.list <- function(x) {
+    if (is_lst(x))
+        bracket(paste0(lapply(x, to_text), collapse = ", "))
+    else
+        stop("cannot convert object to a cql2 text", call. = FALSE)
+}
+
+#' @exportS3Method
+to_text.cql2_time <- function(x) text_func("TIMESTAMP", x$timestamp)
+
+#' @exportS3Method
+to_text.cql2_date <- function(x) text_func("DATE", x$date)
+
+#' @exportS3Method
+to_text.cql2_interval <- function(x) text_func("INTERVAL", x$interval)
+
+#' @exportS3Method
+to_text.cql2_prop <- function(x) to_text(x[[1]])
+
+#' @exportS3Method
+to_text.cql2_func <- function(x) text_func(func_name(x), func_args(x))
+
+#' @exportS3Method
+to_text.cql2_expr <- function(x) to_text(x[[1]])
+
+#' @exportS3Method
+to_text.default <- function(x) to_text(unclass(x))
+
+
+# convert to json ----
+
+json_quote <- function(x) paste0('"', x, '"')
+
+curly <- function(k, v)
+    paste0("{ ", paste0(k, ": ", v, collapse = ", "), " }")
+
+is_obj <- function(x)
+    is.list(x) && !is.null(names(x)) && all(names(x) != "")
+
+to_json <- function(x) UseMethod("to_json", x)
+
+#' @exportS3Method
+to_json.character <- function(x) json_quote(x)
+
+#' @exportS3Method
+to_json.numeric <- function(x) x
+
+#' @exportS3Method
+to_json.integer <- function(x) x
+
+#' @exportS3Method
+to_json.logical <- function(x) if (x) "true" else "false"
+
+#' @exportS3Method
+to_json.list <- function(x) {
+    if (is_lst(x))
+        bracket(paste0(lapply(x, to_json), collapse = ", "))
+    else if (is_obj(x))
+        curly(json_quote(names(x)), lapply(x, to_json))
+    else
+        stop("cannot convert list to a valid json", call. = FALSE)
+}
+
+#' @exportS3Method
+to_json.default <- function(x) to_json(unclass(x))
+
+#' @exportS3Method
+print.cql2_expr <- function(x) cat(to_text(x[[1]]), sep = "")
+
+#' @exportS3Method
+print.cql2_time <- function(x) cat(to_text(x), sep = "")
+
+#' @exportS3Method
+print.cql2_date <- function(x) cat(to_text(x), sep = "")
+
+#' @exportS3Method
+print.cql2_interval <- function(x) cat(to_text(x), sep = "")
+
+#' @exportS3Method
+print.cql2_array <- function(x) cat(to_text(x), sep = "")
+
+#' @exportS3Method
+print.cql2_prop <- function(x) cat(to_text(x), sep = "")
+
+#' @exportS3Method
+print.cql2_func <- function(x) cat(to_text(x), sep = "")
 
 is_literal <- function(x) {
     switch(class(x),
@@ -160,12 +232,12 @@ is_literal <- function(x) {
 }
 
 expr_type <- function(x) {
-    if (is_literal(x)) {
-        "constant"
-    } else if (is.symbol(x)) {
+    if (is.symbol(x)) {
         "symbol"
     } else if (is.call(x)) {
         "call"
+    } else if (is_literal(x)) {
+        "constant"
     } else {
         typeof(x)
     }
@@ -239,11 +311,38 @@ cql2_env <- function(expr) {
     # add binary comparison operators
 
 
+    # add utility functions
+    env$list <- list
+    env$c <- c
+    env$paste <- paste
+
     env
+}
+
+is_bang <- function(x)
+    is.call(x) && length(x) == 2 && paste0(x[[1]]) == "!"
+
+is_bangbang <- function(x)
+    is_bang(x) && is_bang(x[[2]])
+
+get_bangbang <- function(x) x[[2]][[2]]
+
+unquote <- function(expr, env) {
+    if (is.pairlist(expr))
+        as.pairlist(lapply(expr, unquote, env = env))
+    else if (is.call(expr)) {
+        if (is_bangbang(expr))
+            eval(get_bangbang(expr), env)
+        else
+            as.call(lapply(expr, unquote, env = env))
+    }
+    else expr
 }
 
 to_cql2 <- function(expr) {
     expr <- substitute(expr, environment())
+    expr <- unquote(expr, parent.frame())
     env <- cql2_env(expr)
-    eval(expr, env)
+
+    structure(list(eval(expr, env)), class = "cql2_expr")
 }
