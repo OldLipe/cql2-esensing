@@ -5,26 +5,22 @@ is_num <- function(x) is.numeric(x) && length(x) == 1
 
 is_bool <- function(x) is.logical(x) && length(x) == 1
 
-is_time <- function(x)
-    is_str(x) && grep_iso_3339_date_time(x)
+is_time <- function(x) is_str(x) && grep_iso_3339_date_time(x)
 
-is_date <- function(x)
-    is_str(x) && grep_iso_3339_date(x)
+is_date <- function(x) is_str(x) && grep_iso_3339_date(x)
 
 property_identifier <- "^[a-zA-Z]+[0-9a-zA-Z:.$_]*$"
 
-is_property <- function(x) is_str(x) && grepl(property_identifier, x)
+is_property <- function(x) {is_str(x) && grepl(property_identifier, x)}
 
-is_lst <- function(x) is.list(x) && is.null(names(x))
+is_lst <- function(x) {is.list(x) && is.null(names(x))}
 
-is_obj <- function(x)
-    is.list(x) && !is.null(names(x)) && all(names(x) != "")
+is_obj <- function(x) {is.list(x) && !is.null(names(x)) && all(names(x) != "")}
 
-# 6.5 standard comparisons predicate ----
-is_vec <- function(x)
-    is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")
+is_vec <- function(x) {is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")}
 
-args <- function(x) unname(as.list(x)[-1])
+call_name <- function(x) {paste0(x[[1]])}
+call_args <- function(x) {unname(as.list(x)[-1])}
 
 is_literal <- function(x) {
     switch(class(x),
@@ -32,7 +28,7 @@ is_literal <- function(x) {
            logical = TRUE,
            call = {
                if (is_vec(x))
-                   all(vapply(args(x), is_literal, TRUE))
+                   all(vapply(call_args(x), is_literal, TRUE))
                else
                    FALSE
            },
@@ -102,26 +98,4 @@ clone_fn <- function(..., parent_env) {
         assign(n, dots[[n]], envir = env)
     }
     env
-}
-
-#---- auxiliary functions
-
-is_bang <- function(x)
-    is.call(x) && length(x) == 2 && paste0(x[[1]]) == "!"
-
-is_bangbang <- function(x)
-    is_bang(x) && is_bang(x[[2]])
-
-get_bangbang <- function(x) x[[2]][[2]]
-
-unquote <- function(expr, env) {
-    if (is.pairlist(expr))
-        as.pairlist(lapply(expr, unquote, env = env))
-    else if (is.call(expr)) {
-        if (is_bangbang(expr))
-            eval(get_bangbang(expr), env)
-        else
-            as.call(lapply(expr, unquote, env = env))
-    }
-    else expr
 }
