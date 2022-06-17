@@ -44,10 +44,13 @@ to_json.cql2_or_expr <- function(x) json_obj(x)
 to_json.cql2_not_expr <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_bin_comp_pred <- function(x) json_obj(x)
+to_json.cql2_comp_bin_op <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_is_null_pred <- function(x) json_obj(x)
+to_json.cql2_isnull_op <- function(x) json_obj(x)
+
+#' @exportS3Method
+to_json.cql2_math_bin_op <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.cql2_prop_ref <- function(x) json_obj(x)
@@ -56,7 +59,7 @@ to_json.cql2_prop_ref <- function(x) json_obj(x)
 to_json.cql2_time_inst <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_date_int <- function(x) json_obj(x)
+to_json.cql2_date_inst <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.cql2_interval_lit <- function(x) json_obj(x)

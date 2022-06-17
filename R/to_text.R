@@ -8,7 +8,7 @@ text_lst <- function(v) paste0("[ ", paste0(v, collapse = ", "), " ]")
 escape <- function(x) gsub("'", "''", x)
 
 is_not_null_op <- function(x)
-    inherits(x$args[[1]], "cql2_is_null_pred")
+    inherits(x$args[[1]], "cql2_isnull_op")
 
 is_not_null_arg <- function(x)
     to_text(x$args[[1]]$args[[1]])
@@ -52,12 +52,20 @@ to_text.cql2_not_expr <- function(x) {
 }
 
 #' @exportS3Method
-to_text.cql2_bin_comp_pred <- function(x)
+to_text.cql2_comp_bin_op <- function(x)
     paste(to_text(x$args[[1]]), x$op, to_text(x$args[[2]]))
 
 #' @exportS3Method
-to_text.cql2_is_null_pred <- function(x)
+to_text.cql2_isnull_op <- function(x)
     paste(to_text(x$args[[1]]), "IS NULL")
+
+#' @exportS3Method
+to_text.cql2_math_bin_op <- function(x) {
+    if (x$op == "-" && length(x$args) == 1)
+        paste0(x$op, to_text(x$args[[1]]))
+    else
+        paste(to_text(x$args[[1]]), x$op, to_text(x$args[[2]]))
+}
 
 #' @exportS3Method
 to_text.cql2_prop_ref <- function(x)
@@ -65,15 +73,16 @@ to_text.cql2_prop_ref <- function(x)
 
 #' @exportS3Method
 to_text.cql2_time_inst <- function(x)
-    paste0("TIMESTAMP(", to_text(x$args[[1]]), ")")
+    paste0("TIMESTAMP(", to_text(x$timestamp), ")")
 
 #' @exportS3Method
-to_text.cql2_date_int <- function(x)
-    paste0("DATE(", to_text(x$args[[1]]), ")")
+to_text.cql2_date_inst <- function(x)
+    paste0("DATE(", to_text(x$date), ")")
 
 #' @exportS3Method
 to_text.cql2_interval_lit <- function(x)
-    paste0("INTERVAL(", to_text(x$args[[1]]), ",", to_text(x$args[[2]]), ")")
+    paste0("INTERVAL(", to_text(x$interval[[1]]), ",",
+           to_text(x$interval[[2]]), ")")
 
 #' @exportS3Method
 to_text.default <- function(x)

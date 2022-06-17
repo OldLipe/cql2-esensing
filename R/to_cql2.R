@@ -18,23 +18,43 @@ not_expr <- function(a) {
     structure(list(op = "not", args = list(a)), class = "cql2_not_expr")
 }
 
-bin_comp_pred <- function(op) {
+new_comp_bin_op <- function(op) {
     function(a, b) {
         stopifnot(is_scalar(a))
         stopifnot(is_scalar(b))
         structure(list(op = op, args = list(a, b)),
-                  class = "cql2_bin_comp_pred")
+                  class = "cql2_comp_bin_op")
     }
 }
 
-is_null_pred <- function(a) {
+isnull_op <- function(a) {
     stopifnot(is_null_operand(a))
     structure(list(op = "isNull", args = list(a)),
-              class = "cql2_is_null_pred")
+              class = "cql2_isnull_op")
+}
+
+new_math_bin_op <- function(op) {
+    function(a, b = NULL) {
+        stopifnot(is_num_expr(a))
+        stopifnot(is_num_expr(b))
+        structure(list(op = op, args = list(a, b)),
+                  class = "cql2_math_bin_op")
+    }
+}
+
+math_minus_op <- function(a, b) {
+    stopifnot(is_num_expr(a))
+    if (missing(b))
+        args <- list(a)
+    else {
+        stopifnot(is_num_expr(b))
+        args <- list(a, b)
+    }
+    structure(list(op = "-", args = args), class = "cql2_math_bin_op")
 }
 
 prop_ref <- function(a) {
-    is_prop_name(a)
+    stopifnot(is_prop_name(a))
     structure(list(property = a), class = "cql2_prop_ref")
 }
 
@@ -51,7 +71,7 @@ time_inst <- function(x) {
 
 date_inst <- function(x) {
     stopifnot(is_date(x))
-    structure(list(date = x), class = "cql2_date_int")
+    structure(list(date = x), class = "cql2_date_inst")
 }
 
 interval_lit <- function(start = "..", end = "..") {
@@ -73,33 +93,42 @@ cql2_env <- function(expr) {
         `{` =  `{`,
         `(` =  `(`,
         list = list,
-        c =    list
+        c =    list,
+        `:` =  function(from, to) {
+            stopifnot(is_num(from))
+            stopifnot(is_num(to))
+            as.list(seq(from, to))
+        }
     ), envir = basic_r)
 
     # basic cql2 expressions
     basic_cql2 <- new_env(
-        # and expression
+        # and, or, not expressions
         `&&` = and_expr,
         `&` =  and_expr,
-        # or expression
         `||` = or_expr,
         `|` =  or_expr,
-        # not expression
         `!` =  not_expr,
         # comparison predicate
         # binary comparison predicate
-        `==` = bin_comp_pred("="),
-        `!=` = bin_comp_pred("<>"),
-        `<` =  bin_comp_pred("<"),
-        `>` =  bin_comp_pred(">"),
-        `<=` = bin_comp_pred("<="),
-        `>=` = bin_comp_pred(">="),
+        `==` = new_comp_bin_op("="),
+        `!=` = new_comp_bin_op("<>"),
+        `<` =  new_comp_bin_op("<"),
+        `>` =  new_comp_bin_op(">"),
+        `<=` = new_comp_bin_op("<="),
+        `>=` = new_comp_bin_op(">="),
         # is null predicate,
-        `is_null` = is_null_pred,
+        `is_null` = isnull_op,
+        # basic arithmetic expression
+        `-` = math_minus_op, # can be both binary and unary operator
+        `+` = new_math_bin_op("+"),
+        `*` = new_math_bin_op("*"),
+        `/` = new_math_bin_op("/"),
         # temporal literal
-        timestamp = time_inst,
-        date = date_inst,
-        interval = interval_lit,
+        timestamp =  time_inst,
+        time =       time_inst,
+        date =       date_inst,
+        interval =   interval_lit,
         parent_env = basic_r
     )
 
