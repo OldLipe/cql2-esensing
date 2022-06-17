@@ -13,20 +13,21 @@
 #'
 NULL
 
+to_cql2 <- function(expr) {
+    expr <- substitute(expr, environment())
+    expr <- unquote(expr, parent.frame())
+    env <- cql2_env(expr)
+    eval(expr, env)
+}
+
 #' @rdname cql2
 #' @export
 cql2_to_text <- function(expr) {
-    expr <- substitute(expr, environment())
-    expr <- unquote(expr, parent.frame())
-    env <- text_cql2_env(expr)
-    to_text(eval(expr, env))
+    to_text(to_cql2(expr))
 }
 
 #' @rdname cql2
 #' @export
 cql2_to_json <- function(expr) {
-    expr <- substitute(expr, environment())
-    expr <- unquote(expr, parent.frame())
-    env <- json_cql2_env(expr)
-    to_json(eval(expr, env))
+    to_json(to_cql2(expr))
 }

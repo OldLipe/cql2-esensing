@@ -1,32 +1,59 @@
+# boolean expression ----
+
+is_bool_expr <- function(x) {
+    inherits(x, c("cql2_and_expr", "cql2_or_expr", "cql2_not_expr",
+                  "cql2_bin_comp_pred", "cql2_like_pred",
+                  "cql2_is_between_pred", "cql2_is_inlist_pred",
+                  "cql2_is_null_pred", "cql2_spat_pred",
+                  "cql2_temp_pred", "cql2_array_pred", "logical"))
+}
+
+is_null_operand <- function(x)
+    is_str(x) || is_num(x) || is_bool(x) ||
+    inherits(x, c("cql2_time_inst", "cql2_date_inst",
+                  "cql2_prop_ref", "cql2_func", "cql2_geom"))
+
 # scalar data types ----
+
 is_str <- function(x) is.character(x) && length(x) == 1
 
 is_num <- function(x) is.numeric(x) && length(x) == 1
 
 is_bool <- function(x) is.logical(x) && length(x) == 1
 
+is_scalar <- function(x)
+    is_str(x) || is_num(x) || is_bool(x) ||
+    inherits(x, c("cql2_time_inst", "cql2_date_inst",
+                  "cql2_prop_ref", "cql2_func"))
+
+# input check ----
+
 is_time <- function(x) is_str(x) && grep_iso_3339_date_time(x)
 
 is_date <- function(x) is_str(x) && grep_iso_3339_date(x)
 
-property_identifier <- "^[a-zA-Z]+[0-9a-zA-Z:.$_]*$"
+is_temporal <- function(x) is_time(x) || is_date(x)
 
-is_property <- function(x) {is_str(x) && grepl(property_identifier, x)}
+prop_ident <- "^[a-zA-Z]+[0-9a-zA-Z:.$_]*$"
 
-is_lst <- function(x) {is.list(x) && is.null(names(x))}
+is_prop_name <- function(x) is_str(x) && grepl(prop_ident, x)
 
-is_obj <- function(x) {is.list(x) && !is.null(names(x)) && all(names(x) != "")}
+is_lst <- function(x) is.list(x) && is.null(names(x))
 
-is_vec <- function(x) {is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")}
+is_obj <- function(x) is.list(x) && !is.null(names(x)) && all(names(x) != "")
 
-call_name <- function(x) {paste0(x[[1]])}
-call_args <- function(x) {unname(as.list(x)[-1])}
+
+
+
+is_vec <- function(x) is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")
+
+call_args <- function(x) unname(as.list(x)[-1])
 
 is_literal <- function(x) {
     switch(class(x),
            character = , numeric = , integer = ,
-           logical = TRUE,
-           call = {
+           logical =   TRUE,
+           call =      {
                if (is_vec(x))
                    all(vapply(call_args(x), is_literal, TRUE))
                else
@@ -56,7 +83,7 @@ switch_expr <- function(x, ...) {
 all_names_r <- function(x) {
     switch_expr(x,
                 constant = character(),
-                symbol =   as.character(x),
+                symbol =   paste0(x),
                 call =     unlist(lapply(as.list(x[-1]), all_names),
                                   use.names = FALSE))
 }
@@ -70,7 +97,7 @@ all_calls_r <- function(x) {
                 constant = ,
                 symbol =   character(),
                 call =     {
-                    fname <- as.character(x[[1]])
+                    fname <- paste0(x[[1]])
                     children <- unlist(lapply(as.list(x[-1]), all_calls))
                     c(fname, children)
                 })
@@ -80,22 +107,7 @@ all_calls <- function(x) {
     unique(all_calls_r(x))
 }
 
-make_vars <- function(var_names, fn_make, parent_env) {
-    env <- new.env(parent = parent_env)
-    values <- lapply(var_names, fn_make)
-    for (i in seq_along(var_names)) {
-        assign(var_names[[i]], values[[i]], envir = env)
-    }
-    env
-}
-
-clone_fn <- function(..., parent_env) {
+new_env <- function(..., parent_env = emptyenv()) {
     dots <- list(...)
-    env <- new.env(parent = parent_env)
-    for (n in names(dots)) {
-        if (is.function(dots[[n]]))
-            environment(dots[[n]]) <- env
-        assign(n, dots[[n]], envir = env)
-    }
-    env
+    list2env(dots, envir = NULL, parent = parent_env, hash = TRUE)
 }
