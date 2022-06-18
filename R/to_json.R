@@ -16,10 +16,10 @@ to_json <- function(x) UseMethod("to_json", x)
 to_json.character <- function(x) json_quote(x)
 
 #' @exportS3Method
-to_json.numeric <- function(x) x
+to_json.numeric <- function(x) paste0(x)
 
 #' @exportS3Method
-to_json.integer <- function(x) x
+to_json.integer <- function(x) paste0(x)
 
 #' @exportS3Method
 to_json.logical <- function(x) if (x) "true" else "false"
@@ -35,13 +35,10 @@ to_json.list <- function(x) {
 }
 
 #' @exportS3Method
-to_json.cql2_and_expr <- function(x) json_obj(x)
+to_json.cql2_logic_bin_op <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_or_expr <- function(x) json_obj(x)
-
-#' @exportS3Method
-to_json.cql2_not_expr <- function(x) json_obj(x)
+to_json.cql2_logic_not_op <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.cql2_comp_bin_op <- function(x) json_obj(x)
@@ -51,6 +48,14 @@ to_json.cql2_isnull_op <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.cql2_math_bin_op <- function(x) json_obj(x)
+
+#' @exportS3Method
+to_json.cql2_math_minus_op <- function(x) {
+    if (length(x$args) == 1 && is_num(x$args[[1]]))
+        paste0(-x$args[[1]])
+    else
+        json_obj(x)
+}
 
 #' @exportS3Method
 to_json.cql2_prop_ref <- function(x) json_obj(x)

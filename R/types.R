@@ -1,7 +1,7 @@
 # boolean expression ----
 
 is_bool_expr <- function(x) {
-    inherits(x, c("cql2_and_expr", "cql2_or_expr", "cql2_not_expr",
+    inherits(x, c("cql2_logic_bin_op", "cql2_logic_not_op",
                   "cql2_comp_bin_op", "cql2_like_pred",
                   "cql2_is_between_pred", "cql2_is_inlist_pred",
                   "cql2_isnull_op", "cql2_spat_pred",
@@ -15,7 +15,8 @@ is_null_operand <- function(x)
 
 is_num_expr <- function(x)
     is_num(x) ||
-    inherits(x, c("cql2_math_bin_op", "cql2_prop_ref", "cql2_func"))
+    inherits(x, c("cql2_math_bin_op", "cql2_math_minus_op",
+                  "cql2_prop_ref", "cql2_func"))
 
 # scalar data types ----
 
@@ -27,8 +28,8 @@ is_bool <- function(x) is.logical(x) && length(x) == 1
 
 is_scalar <- function(x)
     is_str(x) || is_num(x) || is_bool(x) ||
-    inherits(x, c("cql2_math_bin_op", "cql2_time_inst", "cql2_date_inst",
-                  "cql2_prop_ref", "cql2_func"))
+    inherits(x, c("cql2_math_bin_op", "cql2_math_minus_op", "cql2_time_inst",
+                  "cql2_date_inst", "cql2_prop_ref", "cql2_func"))
 
 # input check ----
 

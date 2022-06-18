@@ -1,21 +1,18 @@
 
 #---- cql2 classes ----
 
-and_expr <- function(a, b) {
-    stopifnot(is_bool_expr(a))
-    stopifnot(is_bool_expr(b))
-    structure(list(op = "and", args = list(a, b)), class = "cql2_and_expr")
+new_logic_bin_op <- function(op) {
+    function(a, b) {
+        stopifnot(is_bool_expr(a))
+        stopifnot(is_bool_expr(b))
+        structure(list(op = op, args = list(a, b)),
+                  class = "cql2_logic_bin_op")
+    }
 }
 
-or_expr <- function(a, b) {
+logic_not_op <- function(a) {
     stopifnot(is_bool_expr(a))
-    stopifnot(is_bool_expr(b))
-    structure(list(op = "or", args = list(a, b)), class = "cql2_or_expr")
-}
-
-not_expr <- function(a) {
-    stopifnot(is_bool_expr(a))
-    structure(list(op = "not", args = list(a)), class = "cql2_not_expr")
+    structure(list(op = "not", args = list(a)), class = "cql2_logic_not_op")
 }
 
 new_comp_bin_op <- function(op) {
@@ -50,7 +47,7 @@ math_minus_op <- function(a, b) {
         stopifnot(is_num_expr(b))
         args <- list(a, b)
     }
-    structure(list(op = "-", args = args), class = "cql2_math_bin_op")
+    structure(list(op = "-", args = args), class = "cql2_math_minus_op")
 }
 
 prop_ref <- function(a) {
@@ -90,11 +87,15 @@ cql2_env <- function(expr) {
 
     # basic R expressions
     list2env(list(
-        `{` =  `{`,
-        `(` =  `(`,
-        list = list,
-        c =    list,
-        `:` =  function(from, to) {
+        `{` =     `{`,
+        `(` =     `(`,
+        `T` =     TRUE,
+        `TRUE` =  TRUE,
+        `F` =     FALSE,
+        `FALSE` = FALSE,
+        list =    list,
+        c =       list,
+        `:` =     function(from, to) {
             stopifnot(is_num(from))
             stopifnot(is_num(to))
             as.list(seq(from, to))
@@ -104,11 +105,11 @@ cql2_env <- function(expr) {
     # basic cql2 expressions
     basic_cql2 <- new_env(
         # and, or, not expressions
-        `&&` = and_expr,
-        `&` =  and_expr,
-        `||` = or_expr,
-        `|` =  or_expr,
-        `!` =  not_expr,
+        `&&` = new_logic_bin_op("and"),
+        `&` =  new_logic_bin_op("and"),
+        `||` = new_logic_bin_op("or"),
+        `|` =  new_logic_bin_op("or"),
+        `!` =  logic_not_op,
         # comparison predicate
         # binary comparison predicate
         `==` = new_comp_bin_op("="),

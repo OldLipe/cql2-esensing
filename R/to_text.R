@@ -7,11 +7,15 @@ text_lst <- function(v) paste0("[ ", paste0(v, collapse = ", "), " ]")
 
 escape <- function(x) gsub("'", "''", x)
 
-is_not_null_op <- function(x)
-    inherits(x$args[[1]], "cql2_isnull_op")
+text_logic_not_op <- function(x) UseMethod("text_logic_not_op", x$args[[1]])
 
-is_not_null_arg <- function(x)
-    to_text(x$args[[1]]$args[[1]])
+#' @exportS3Method
+text_logic_not_op.cql2_isnull_op <- function(x)
+    paste(to_text(x$args[[1]]$args[[1]]), "IS NOT NULL")
+
+#' @exportS3Method
+text_logic_not_op.default <- function(x)
+    paste("NOT", to_text(x$args[[1]]))
 
 to_text <- function(x) UseMethod("to_text", x)
 
@@ -19,10 +23,10 @@ to_text <- function(x) UseMethod("to_text", x)
 to_text.character <- function(x) text_quote(escape(x))
 
 #' @exportS3Method
-to_text.numeric <- function(x) x
+to_text.numeric <- function(x) paste0(x)
 
 #' @exportS3Method
-to_text.integer <- function(x) x
+to_text.integer <- function(x) paste0(x)
 
 #' @exportS3Method
 to_text.logical <- function(x) if (x) "true" else "false"
@@ -36,19 +40,12 @@ to_text.list <- function(x) {
 }
 
 #' @exportS3Method
-to_text.cql2_and_expr <- function(x)
-    paste(to_text(x$args[[1]]), "AND", to_text(x$args[[2]]))
+to_text.cql2_logic_bin_op <- function(x)
+    paste(to_text(x$args[[1]]), toupper(x$op), to_text(x$args[[2]]))
 
 #' @exportS3Method
-to_text.cql2_or_expr <- function(x)
-    paste(to_text(x$args[[1]]), "OR", to_text(x$args[[2]]))
-
-#' @exportS3Method
-to_text.cql2_not_expr <- function(x) {
-    if (is_not_null_op(x))
-        paste(is_not_null_arg(x), "IS NOT NULL")
-    else
-        paste("NOT", to_text(x$args[[1]]))
+to_text.cql2_logic_not_op <- function(x) {
+    text_logic_not_op(x)
 }
 
 #' @exportS3Method
@@ -60,8 +57,12 @@ to_text.cql2_isnull_op <- function(x)
     paste(to_text(x$args[[1]]), "IS NULL")
 
 #' @exportS3Method
-to_text.cql2_math_bin_op <- function(x) {
-    if (x$op == "-" && length(x$args) == 1)
+to_text.cql2_math_bin_op <- function(x)
+    paste(to_text(x$args[[1]]), x$op, to_text(x$args[[2]]))
+
+#' @exportS3Method
+to_text.cql2_math_minus_op <- function(x) {
+    if (length(x$args) == 1)
         paste0(x$op, to_text(x$args[[1]]))
     else
         paste(to_text(x$args[[1]]), x$op, to_text(x$args[[2]]))
