@@ -15,13 +15,14 @@ cql2_json(expr)
 }
 \description{
 These functions convert R expressions to CQL2 standard (text or JSON).
-operators
 }
 \examples{
 # basic cql2 examples
 cql2_text("This is a literal string.")
 cql2_text("Via dell'Avvento")
+cql2_json("Via dell'Avvento")
 cql2_text(-100)
+cql2_json(-100)
 cql2_text(3.14159)
 cql2_text(TRUE)
 cql2_text(FALSE)

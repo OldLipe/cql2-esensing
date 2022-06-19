@@ -2,7 +2,6 @@
 #'
 #' @description
 #' These functions convert R expressions to CQL2 standard (text or JSON).
-#' operators
 #'
 #' @name cql2
 #'
@@ -37,12 +36,6 @@
 #' cql2_text(!is_null(geometry))
 #' cql2_json(!is_null(geometry))
 NULL
-
-to_cql2 <- function(expr) {
-    expr <- unquote(expr, parent.frame())
-    env <- cql2_env(expr)
-    eval(expr, env)
-}
 
 #' @rdname cql2
 #' @export

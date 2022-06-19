@@ -1,5 +1,5 @@
 
-#---- convert to json ----
+# ---- auxiliary functions ----
 
 json_quote <- function(x) paste0('"', x, '"')
 
@@ -9,6 +9,8 @@ json_lst <- function(x)
 json_obj <- function(x)
     paste0("{ ", paste0(json_quote(names(x)), ": ",
                         unname(lapply(x, to_json)), collapse = ", "), " }")
+
+# ---- convert to json ----
 
 to_json <- function(x) UseMethod("to_json", x)
 
@@ -35,22 +37,22 @@ to_json.list <- function(x) {
 }
 
 #' @exportS3Method
-to_json.cql2_logic_bin_op <- function(x) json_obj(x)
+to_json.cql2_logic_op <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_logic_not_op <- function(x) json_obj(x)
+to_json.cql2_not_op <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_comp_bin_op <- function(x) json_obj(x)
+to_json.cql2_comp_op <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.cql2_isnull_op <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_math_bin_op <- function(x) json_obj(x)
+to_json.cql2_math_op <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_math_minus_op <- function(x) {
+to_json.cql2_minus_op <- function(x) {
     if (length(x$args) == 1 && is_num(x$args[[1]]))
         paste0(-x$args[[1]])
     else
@@ -61,13 +63,13 @@ to_json.cql2_math_minus_op <- function(x) {
 to_json.cql2_prop_ref <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_time_inst <- function(x) json_obj(x)
+to_json.cql2_time <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_date_inst <- function(x) json_obj(x)
+to_json.cql2_date <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_interval_lit <- function(x) json_obj(x)
+to_json.cql2_interval <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.default <- function(x)
