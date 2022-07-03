@@ -19,3 +19,4 @@ Collate:
     'cql2-enhancements.R'
     'cql2-adv_comp.R'
     'cql2.R'
+    'spatial_op.R'

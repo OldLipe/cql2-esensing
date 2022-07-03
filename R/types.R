@@ -13,6 +13,9 @@ is_scalar <- function(x)
                   "cql2_time", "cql2_date", "cql2_interval",
                   "cql2_prop_ref", "cql2_func"))
 
+is_spatial <- function(x)
+    inherits(x, c("sf", "sfc"))
+
 # input check ----
 
 # check timestamp instant
@@ -63,6 +66,10 @@ is_str_expr <- function(x)
 # check pattern expression
 is_patt_expr <- function(x)
     is_str(x) || inherits(x, c("cql2_casei_op", "cql2_accenti_op"))
+
+is_spatial_expr <- function(x)
+    is_spatial(x) || is_str(x) ||
+    inherits(x, c("cql2_prop_ref", "cql2_func"))
 
 # check list of scalars (at least one element)
 is_scalar_lst <- function(x)

@@ -36,6 +36,12 @@ to_text.integer <- function(x) paste0(x)
 to_text.logical <- function(x) if (x) "true" else "false"
 
 #' @exportS3Method
+to_text.sf <- function(x) lwgeom::st_asewkt(x)
+
+#' @exportS3Method
+to_text.sfc <- function(x) lwgeom::st_asewkt(x)
+
+#' @exportS3Method
 to_text.list <- function(x) {
     if (is_lst(x))
         text_lst(lapply(x, to_text))
@@ -50,6 +56,16 @@ to_text.cql2_logic_op <- function(x)
 #' @exportS3Method
 to_text.cql2_not_op <- function(x) {
     text_not_op(x)
+}
+
+#' @exportS3Method
+to_text.cql2_spatial_op <- function(x) {
+    paste0(
+        toupper(x$op), "(",
+        to_text(x$args[[1]]), ",",
+        to_text(x$args[[2]]),
+        ")"
+    )
 }
 
 #' @exportS3Method

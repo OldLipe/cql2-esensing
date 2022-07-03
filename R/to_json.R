@@ -37,6 +37,13 @@ to_json.list <- function(x) {
 }
 
 #' @exportS3Method
+to_json.sf <- function(x) to_json.sfc(x$geometry)
+
+# TODO: this can be implemented, use this package for testing
+#' @exportS3Method
+to_json.sfc <- function(x) geojsonsf::sfc_geojson(x)
+
+#' @exportS3Method
 to_json.cql2_logic_op <- function(x) json_obj(x)
 
 #' @exportS3Method
@@ -58,6 +65,9 @@ to_json.cql2_minus_op <- function(x) {
     else
         json_obj(x)
 }
+
+#' @exportS3Method
+to_json.cql2_spatial_op <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.cql2_prop_ref <- function(x) json_obj(x)

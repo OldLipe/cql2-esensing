@@ -27,7 +27,7 @@ is_vec <- function(x) is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")
 call_args <- function(x) unname(as.list(x)[-1])
 
 is_literal <- function(x) {
-    switch(class(x),
+    switch(class(x)[[1]],
            character = , numeric = , integer = ,
            logical =   TRUE,
            call =      {
@@ -61,6 +61,7 @@ switch_expr <- function(x, ...) {
 
 all_names_r <- function(x) {
     switch_expr(x,
+                list = list(),
                 constant = character(),
                 symbol =   paste0(x),
                 call =     unlist(lapply(as.list(x[-1]), all_names),

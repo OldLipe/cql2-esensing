@@ -30,12 +30,31 @@ in_op <- function(a, b) {
     structure(list(op = "in", args = list(a, b)), class = "cql2_in_op")
 }
 
+# spatial_op
+spatial_op <- function(op) {
+    function(geom1, geom2) {
+        stopifnot(is_spatial_expr(geom1))
+        stopifnot(is_spatial_expr(geom2))
+        structure(list(op = op, args = list(geom1, geom2)),
+                  class = "cql2_spatial_op")
+    }
+
+}
+
 # ---- environment ----
 
 cql2_adv_comp_env <- new_env(
     `%like%` =   like_op,
     `between` =  between_op,
     `%in%` =     in_op,
+    s_intersects = spatial_op("s_intersects"),
+    s_contains   = spatial_op("s_contains"),
+    s_crosses    = spatial_op("s_crosses"),
+    s_disjoint   = spatial_op("s_disjoint"),
+    s_equals     = spatial_op("s_equals"),
+    s_overlaps   = spatial_op("s_overlaps"),
+    s_touches    = spatial_op("s_touches"),
+    s_within     = spatial_op("s_within"),
     parent_env = cql2_core_env
 )
 

@@ -153,7 +153,6 @@ cql2_env <- function(expr) {
 
     # order of evaluation:
     # cql2_env --> cql2_core_env --> cql2_ident_env.
-
     # update `ident_env` environment with all input properties
     list2env(get_all_props(expr), envir = cql2_ident_env)
 
