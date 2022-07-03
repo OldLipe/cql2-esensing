@@ -1,106 +1,76 @@
-# basic validation ----
+
+# scalar data types ----
+
 is_str <- function(x) is.character(x) && length(x) == 1
 
 is_num <- function(x) is.numeric(x) && length(x) == 1
 
 is_bool <- function(x) is.logical(x) && length(x) == 1
 
+is_scalar <- function(x)
+    is_str(x) || is_num(x) || is_bool(x) ||
+    inherits(x, c("cql2_math_op", "cql2_minus_op",
+                  "cql2_time", "cql2_date", "cql2_interval",
+                  "cql2_prop_ref", "cql2_func"))
+
+is_spatial <- function(x)
+    inherits(x, c("sf", "sfc"))
+
+# input check ----
+
+# check timestamp instant
 is_time <- function(x) is_str(x) && grep_iso_3339_date_time(x)
 
+# check date instant
 is_date <- function(x) is_str(x) && grep_iso_3339_date(x)
 
-is_literal <- function(x) {
-    switch(class(x),
-        `NULL` = TRUE,
-        character = , integer = , logical = , cql2_time = , cql2_date = {
-            length(x) == 1
-        },
-        FALSE
-    )
-}
+# check temporal instant
+is_temporal <- function(x) is_time(x) || is_date(x)
 
-is_array <- function(x) is.list(x) && is.null(names(x))
+# check property name
+prop_ident <- "^[a-zA-Z]+[0-9a-zA-Z:.$_]*$"
 
-expr_type <- function(x) {
-    if (is_literal(x)) {
-        "constant"
-    } else if (is.symbol(x)) {
-        "symbol"
-    } else if (is.call(x)) {
-        "call"
-    } else if (is.pairlist(x)) {
-        "pairlist"
-    } else {
-        typeof(x)
-    }
-}
+is_prop_name <- function(x) is_str(x) && grepl(prop_ident, x)
 
-switch_expr <- function(x, ...) {
-    switch(expr_type(x), ...,
-           stop("cannot handle type '", class(x), "'", call. = FALSE))
-}
+# check list (array)
+is_lst <- function(x) is.list(x) && is.null(names(x))
 
-# escape ----
-quote <- "'"
+# check object (named members)
+is_obj <- function(x) is.list(x) && !is.null(names(x)) && all(names(x) != "")
 
-escaped_quote <- "''"
+# check Boolean expression
+is_bool_expr <- function(x)
+    inherits(x, c("cql2_logic_op", "cql2_not_op",
+                  "cql2_comp_op", "cql2_like_op",
+                  "cql2_between_op", "cql2_inlist_op",
+                  "cql2_isnull_op", "cql2_spat_pred",
+                  "cql2_temp_pred", "cql2_array_pred", "logical"))
 
-escape <- function(x) gsub(quote, escaped_quote, x)
+# check is_null operand
+is_isnull_operand <- function(x)
+    is_str(x) || is_num(x) || is_bool(x) ||
+    inherits(x, c("cql2_time", "cql2_date", "cql2_interval",
+                  "cql2_prop_ref", "cql2_func", "cql2_geom"))
 
-unescape <- function(x) gsub(escaped_quote, quote, x)
+# check number expressions
+is_num_expr <- function(x)
+    is_num(x) ||
+    inherits(x, c("cql2_math_op", "cql2_minus_op",
+                  "cql2_prop_ref", "cql2_func"))
 
-# date time ----
-time <- function(x) {
-    stopifnot(is_time(x))
-    structure(list(timestamp = x), class = "cql2_time")
-}
+# check character expression
+is_str_expr <- function(x)
+    is_str(x) || inherits(x, c("cql2_casei_op", "cql2_accenti_op",
+                               "cql2_prop_ref", "cql2_func"))
 
-#' @exportS3Method
-print.cql2_time <- function(x) cat("TIMESTAMP('", x, "')", "\n", sep = "")
+# check pattern expression
+is_patt_expr <- function(x)
+    is_str(x) || inherits(x, c("cql2_casei_op", "cql2_accenti_op"))
 
-date <- function(x) {
-    stopifnot(is_date(x))
-    structure(list(date = x), class = "cql2_date")
-}
+is_spatial_expr <- function(x)
+    is_spatial(x) || is_str(x) ||
+    inherits(x, c("cql2_prop_ref", "cql2_func"))
 
-#' @exportS3Method
-print.cql2_date <- function(x) cat("DATE('", x, "')", "\n", sep = "")
-
-dotdot <- ".."
-
-.. <- NULL
-
-interval <- function(start = .., end = ..) {
-    if (!is.null(start))
-        stopifnot(is_date(start) || is_time(start))
-    else start <- dotdot
-    if (!is.null(end))
-        stopifnot(is_date(end) || is_time(end))
-    else end <- dotdot
-    structure(list(interval = list(start, end)), class = "cql2_interval")
-}
-
-#' @exportS3Method
-print.cql2_interval <- function(x)
-    cat("INTERVAL('", x$interval[[1]], "', '", x$interval[[2]], "')", sep = "")
-
-# convert to text ----
-to_cql2_text <- function(expr) UseMethod("to_cql2_text", expr)
-
-#' @exportS3Method
-to_cql2_text.character <- function(expr) {
-    escape(expr)
-}
-
-all_names_recursive <- function(x) {
-    switch_expr(x,
-                constant = character(),
-                symbol =   as.character(x),
-                call =     unlist(lapply(as.list(x[-1]), all_names),
-                                  use.names = FALSE)
-    )
-}
-
-all_names <- function(x) {
-    unique(all_names_recursive(x))
-}
+# check list of scalars (at least one element)
+is_scalar_lst <- function(x)
+    is_lst(x) && length(x) > 0 && all(vapply(x, is_scalar, TRUE))

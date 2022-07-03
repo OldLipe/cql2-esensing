@@ -5,7 +5,18 @@ Authors@R:
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: This is a experimental pilot project to develop CQL2 client.
-License: Apache License (>= 2)
+License: Apache License (== 2) | file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
+Collate:
+    'expr-funs.R'
+    'types.R'
+    'iso_3339.R'
+    'cql2-core.R'
+    'to_json.R'
+    'to_text.R'
+    'cql2-enhancements.R'
+    'cql2-adv_comp.R'
+    'cql2.R'
+    'spatial_op.R'
