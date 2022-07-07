@@ -36,22 +36,32 @@
 #' cql2_text(!is_null(geometry))
 #' cql2_json(!is_null(geometry))
 #' poly_sf <- sfheaders::sf_polygon(matrix(c(0,0,0,0,1,1), ncol = 2))
-#' cql2_text(s_intersects(!!poly_sf, geometry))
-#' cql2_json(s_intersects(!!poly_sf, geometry))
-#' cql2_text(s_crosses(geometry, !!poly_sf))
-#' cql2_json(s_crosses(geometry, !!poly_sf))
+#' cql2_text(s_intersects({{poly_sf}}, geometry))
+#' cql2_json(s_intersects({{poly_sf}}, geometry))
+#' cql2_text(s_crosses(geometry, {{poly_sf}}))
+#' cql2_json(s_crosses(geometry, {{poly_sf}}))
 NULL
 
 #' @rdname cql2
 #' @export
 cql2_text <- function(expr) {
     expr <- substitute(expr, environment())
-    to_text(to_cql2(expr))
+    # TODO: implement support for field filter-crs and detect crs inside expr
+    structure(
+        list(`filter-lang` = "cql2-text",
+             filter = to_text(to_cql2(expr))),
+        class = "cql2_query"
+    )
 }
 
 #' @rdname cql2
 #' @export
 cql2_json <- function(expr) {
     expr <- substitute(expr, environment())
-    to_json(to_cql2(expr))
+    # TODO: implement support for field filter-crs and detect crs inside expr
+    structure(
+        list(`filter-lang` = "cql2-json",
+             filter = to_json(to_cql2(expr))),
+        class = "cql2_query"
+    )
 }

@@ -35,12 +35,17 @@ spatial_op <- function(op) {
     function(geom1, geom2) {
         stopifnot(is_spatial_expr(geom1))
         stopifnot(is_spatial_expr(geom2))
+        if (is_spatial(geom1))
+            geom1 <- get_spatial_sfc(geom1)
+        if (is_spatial(geom2))
+            geom2 <- get_spatial_sfc(geom2)
         structure(list(op = op, args = list(geom1, geom2)),
                   class = "cql2_spatial_op")
     }
+}
+get_spatial_sfc <- function(geom) {
 
 }
-
 # ---- environment ----
 
 cql2_adv_comp_env <- new_env(

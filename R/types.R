@@ -14,7 +14,8 @@ is_scalar <- function(x)
                   "cql2_prop_ref", "cql2_func"))
 
 is_spatial <- function(x)
-    inherits(x, c("sf", "sfc"))
+    inherits(x, "sf")  && nrow(x) == 1 ||
+    inherits(x, "sfc") && length(x) == 1
 
 # input check ----
 
