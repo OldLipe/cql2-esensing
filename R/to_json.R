@@ -70,10 +70,16 @@ to_json.cql2_minus_op <- function(x) {
 to_json.cql2_spatial_op <- function(x) json_obj(x)
 
 #' @exportS3Method
+to_json.cql2_temporal_op <- function(x) json_obj(x)
+
+#' @exportS3Method
+to_json.cql2_func <- function(x) json_obj(x)
+
+#' @exportS3Method
 to_json.cql2_prop_ref <- function(x) json_obj(x)
 
 #' @exportS3Method
-to_json.cql2_time <- function(x) json_obj(x)
+to_json.cql2_timestamp <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.cql2_date <- function(x) json_obj(x)

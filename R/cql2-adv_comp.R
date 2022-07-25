@@ -43,24 +43,40 @@ spatial_op <- function(op) {
                   class = "cql2_spatial_op")
     }
 }
-get_spatial_sfc <- function(geom) {
 
+get_spatial_sfc <- function(geom) {
+    return(geom)
 }
+
+# temporal_op
+temporal_op <- function(op) {
+    function(a, b) {
+        stopifnot(is_temporal_expr(a))
+        stopifnot(is_temporal_expr(b))
+
+        structure(list(op = op, args = list(a, b)),
+                  class = "cql2_temporal_op")
+    }
+}
+
 # ---- environment ----
 
 cql2_adv_comp_env <- new_env(
-    `%like%` =   like_op,
-    `between` =  between_op,
-    `%in%` =     in_op,
+    `%like%` =     like_op,
+    `between` =    between_op,
+    `%in%` =       in_op,
     s_intersects = spatial_op("s_intersects"),
-    s_contains   = spatial_op("s_contains"),
-    s_crosses    = spatial_op("s_crosses"),
-    s_disjoint   = spatial_op("s_disjoint"),
-    s_equals     = spatial_op("s_equals"),
-    s_overlaps   = spatial_op("s_overlaps"),
-    s_touches    = spatial_op("s_touches"),
-    s_within     = spatial_op("s_within"),
-    parent_env = cql2_core_env
+    s_contains =   spatial_op("s_contains"),
+    s_crosses =    spatial_op("s_crosses"),
+    s_disjoint =   spatial_op("s_disjoint"),
+    s_equals =     spatial_op("s_equals"),
+    s_overlaps =   spatial_op("s_overlaps"),
+    s_touches =    spatial_op("s_touches"),
+    s_within =     spatial_op("s_within"),
+    t_contains =   temporal_op("t_contains"),
+    t_intersects = temporal_op("t_intersects"),
+    t_during =     temporal_op("t_during"),
+    parent_env =   cql2_core_env
 )
 
 # ---- convert to json ----
