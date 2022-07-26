@@ -10,24 +10,32 @@ is_bool <- function(x) is.logical(x) && length(x) == 1
 is_scalar <- function(x)
     is_str(x) || is_num(x) || is_bool(x) ||
     inherits(x, c("cql2_math_op", "cql2_minus_op",
-                  "cql2_time", "cql2_date", "cql2_interval",
+                  "cql2_timestamp", "cql2_date", "cql2_interval",
                   "cql2_prop_ref", "cql2_func"))
+
+is_spatial <- function(x)
+    inherits(x, "sf")  && nrow(x) == 1 ||
+    inherits(x, "sfc") && length(x) == 1
 
 # input check ----
 
 # check timestamp instant
-is_time <- function(x) is_str(x) && grep_iso_3339_date_time(x)
+is_time <- function(x) is_str(x) && grep_iso_3339_date_time(x) ||
+    inherits(x, "cql2_timestamp")
 
 # check date instant
-is_date <- function(x) is_str(x) && grep_iso_3339_date(x)
+is_date <- function(x) is_str(x) && grep_iso_3339_date(x) ||
+    inherits(x, "cql2_date")
 
 # check temporal instant
 is_temporal <- function(x) is_time(x) || is_date(x)
 
 # check property name
-prop_ident <- "^[a-zA-Z]+[0-9a-zA-Z:.$_]*$"
+identifier <- "^[a-zA-Z]+[0-9a-zA-Z:.$_]*$"
 
-is_prop_name <- function(x) is_str(x) && grepl(prop_ident, x)
+is_prop_name <- function(x) is_str(x) && grepl(identifier, x)
+
+is_func_name <- function(x) is_str(x) && grepl(identifier, x)
 
 # check list (array)
 is_lst <- function(x) is.list(x) && is.null(names(x))
@@ -46,7 +54,7 @@ is_bool_expr <- function(x)
 # check is_null operand
 is_isnull_operand <- function(x)
     is_str(x) || is_num(x) || is_bool(x) ||
-    inherits(x, c("cql2_time", "cql2_date", "cql2_interval",
+    inherits(x, c("cql2_timestamp", "cql2_date", "cql2_interval",
                   "cql2_prop_ref", "cql2_func", "cql2_geom"))
 
 # check number expressions
@@ -63,6 +71,14 @@ is_str_expr <- function(x)
 # check pattern expression
 is_patt_expr <- function(x)
     is_str(x) || inherits(x, c("cql2_casei_op", "cql2_accenti_op"))
+
+is_spatial_expr <- function(x)
+    is_spatial(x) || is_str(x) ||
+    inherits(x, c("cql2_prop_ref", "cql2_func"))
+
+is_temporal_expr <- function(x)
+    is_temporal(x) || inherits(x, c("cql2_interval", "cql2_prop_ref",
+                                    "cql2_func"))
 
 # check list of scalars (at least one element)
 is_scalar_lst <- function(x)

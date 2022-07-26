@@ -26,8 +26,8 @@ cql2_json(-100)
 cql2_text(3.14159)
 cql2_text(TRUE)
 cql2_text(FALSE)
-cql2_text(time("1969-07-20T20:17:40Z")) # it also works with timestamp()
-cql2_json(time("1969-07-20T20:17:40Z"))
+cql2_text(timestamp("1969-07-20T20:17:40Z")) # it also works with timestamp()
+cql2_json(timestamp("1969-07-20T20:17:40Z"))
 cql2_text(date("1969-07-20"))
 cql2_json(date("1969-07-20"))
 cql2_text(interval("1969-07-16", "1969-07-24"))
@@ -44,4 +44,23 @@ cql2_text(updated >= date("1970-01-01"))
 cql2_json(updated >= date("1970-01-01"))
 cql2_text(!is_null(geometry))
 cql2_json(!is_null(geometry))
+poly_sf <- sfheaders::sf_polygon(matrix(c(0,0,0,0,1,1), ncol = 2))
+cql2_text(s_intersects({{poly_sf}}, geometry))
+cql2_json(s_intersects({{poly_sf}}, geometry))
+cql2_text(s_crosses(geometry, {{poly_sf}}))
+cql2_json(s_crosses(geometry, {{poly_sf}}))
+cql2_text(t_intersects(event_date,
+          interval("1969-07-16T05:32:00Z", "1969-07-24T16:50:35Z")))
+cql2_json(t_intersects(event_date,
+          interval("1969-07-16T05:32:00Z", "1969-07-24T16:50:35Z")))
+cql2_text(t_during(touchdown,
+          interval("1969-07-16T13:32:00Z", "1969-07-24T16:50:35Z")))
+cql2_json(t_during(touchdown,
+          interval("1969-07-16T13:32:00Z", "1969-07-24T16:50:35Z")))
+cql2_text(s_within(road,Buffer(geometry,10,"m")))
+cql2_json(s_within(road,Buffer(geometry,10,"m")))
+cql2_text(t_during(timestamp("1969-07-20T20:17:40Z"),
+          interval("1969-07-16T13:32:00Z", "1969-07-24T16:50:35Z")))
+cql2_json(t_during(timestamp("1969-07-20T20:17:40Z"),
+          interval("1969-07-16T13:32:00Z", "1969-07-24T16:50:35Z")))
 }
