@@ -19,3 +19,7 @@ Collate:
     'cql2-enhancements.R'
     'cql2-adv_comp.R'
     'cql2.R'
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
