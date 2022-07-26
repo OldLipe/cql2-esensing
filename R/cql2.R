@@ -17,7 +17,7 @@
 #' cql2_text(3.14159)
 #' cql2_text(TRUE)
 #' cql2_text(FALSE)
-#' cql2_text(timestamp("1969-07-20T20:17:40Z")) # it also works with timestamp()
+#' cql2_text(timestamp("1969-07-20T20:17:40Z"))
 #' cql2_json(timestamp("1969-07-20T20:17:40Z"))
 #' cql2_text(date("1969-07-20"))
 #' cql2_json(date("1969-07-20"))

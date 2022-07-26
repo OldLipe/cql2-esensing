@@ -76,7 +76,7 @@ cql2_adv_comp_env <- new_env(
     t_contains =   temporal_op("t_contains"),
     t_intersects = temporal_op("t_intersects"),
     t_during =     temporal_op("t_during"),
-    parent_env =   cql2_core_env
+    global_env =   cql2_global_env
 )
 
 # ---- convert to json ----

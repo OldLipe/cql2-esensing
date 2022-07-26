@@ -1,0 +1,155 @@
+---
+title: "CQL2 development report 1"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{CQL2 development report 1}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This document reports partial results of CQL2 development. As stated in the project, the first milestone is the development of a "proof of concept" version, from which we can validate the idea of package implementation. In this report, we show how CQL2 package works and provide a variety of examples of its use. The current version of CQL2 package can be accessed in [](https://github.com/e-sensing/cql2exp).
+
+## CQL2 filter standard
+
+CQL2 is an OGC standard that enables complex filter expressions on OAFeat3 or STAC web services. CQL2 standard states that expressions can be either represented in JSON or TEXT formats. Our implementation intends to convert native R expressions into CQL2 valid expressions without the need of cumbersome nested lists or dictionaries. Also, with the same filter representation, we can make CQL2 filter requisition either in JSON or TEXT formats.
+
+Let's start with an simple example. In the following code, we have a valid CQL2 expression (in TEXT format) which refers to two properties `vehicle_height` and `bridge_clearance`.
+
+```{txt}
+vehicle_height > (bridge_clearance-1)
+```
+
+This filter expression can be passed in HTTP GET verb implemented by an service to retrieve only those features that satisfies the condition. The same expression can be represented in JSON format, which is more suitable to HTTP POST requests:
+
+```{json}
+{
+  "op": ">",
+  "args": [
+    {"property":"vehicle_height"},
+    {
+      "op": "-",
+      "args": [
+        {"property":"bridge_clearance"},
+        1
+      ]
+    }
+  ]
+}
+```
+
+Note how properties `vehicle_height` and `bridge_clearance` are represented in this format. They are elements of an object containing a `property` member. Also they go as arguments of operators (in this case `>` and `-` operators). 
+
+## Converting R expressions into CQL2 syntax
+
+```{r setup}
+library(cql2exp)
+```
+
+In R language, the JSON above could be represented by nested lists which would be somewhat cumbersome to write. To produce valid CQL2 filter expressions we use R abstract syntax tree (AST) from R expressions that can be converted either to TEXT or JSON formats. Let's see the same previous example written in R CQL2: 
+
+```{r}
+cql2_text(vehicle_height > (bridge_clearance-1)) # TEXT format
+cql2_json(vehicle_height > (bridge_clearance-1)) # JSON format
+```
+
+In both cases, the same CQL2 object representation is built from the expression using AST of R expression evaluation. Then, the object is converted into TEXT or JSON format.
+
+Sometimes, CQL2 filters in TEXT format is represented in the same way as in R expression. However this should not be always the case, as we can see in some examples provided bellow.
+
+## Basic CQL2
+
+Fazer overview e falar como a expression deve ser avaliada como filtro.
+
+### Data types and literal values
+
+- character string
+
+```{R}
+cql2_text("Via dell'Avvento")
+cql2_json("Via dell'Avvento")
+```
+
+- number
+
+```{R}
+cql2_text(3.1415)
+cql2_json(-100)
+```
+
+- boolean
+
+```{R}
+cql2_text(TRUE)
+cql2_json(FALSE)
+```
+
+- timestamp
+
+```{R}
+cql2_text(timestamp("1969-07-20T20:17:40Z"))
+cql2_json(timestamp("1969-07-20T20:17:40Z"))
+```
+
+- date
+
+```{R}
+cql2_text(date("1969-07-20"))
+cql2_json(date("1969-07-20"))
+```
+
+### Property references
+
+```{R}
+cql2_text(windSpeed > 1)
+cql2_json(windSpeed > 1)
+```
+
+### Standard comparison predicates
+
+```{R}
+cql2_text(city == "Crato")
+cql2_json(city == "Jacareí")
+```
+
+```{R}
+cql2_text(avg(windSpeed) < 4)
+cql2_json(avg(windSpeed) < 4)
+```
+
+```{R}
+cql2_text(balance - 150.0 > 0)
+cql2_json(balance - 150.0 > 0)
+```
+
+
+```{R}
+cql2_text(updated >= date('1970-01-01'))
+cql2_json(updated >= date('1970-01-01'))
+```
+
+- NULL predicate
+
+```{R}
+cql2_text(!is_null(geometry))
+cql2_json(!is_null(geometry))
+```
+
+### Common Query Language enhancements
+
+```{R}
+
+```
+
+## Concluding remarks
+
+
+To do this, we use the abstract syntax tree (AST) of R language and implemented a set of CQL2 functions (core and advanced extension).

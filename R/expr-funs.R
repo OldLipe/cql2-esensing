@@ -93,7 +93,26 @@ all_calls <- function(x) {
 
 # ---- new env ----
 
-new_env <- function(..., parent_env = emptyenv()) {
+new_env <- function(..., parent_env = NULL, global_env = NULL) {
     dots <- list(...)
-    list2env(dots, envir = NULL, parent = parent_env, hash = TRUE)
+    # default parent_env is taken from global parent env
+    if (is.null(parent_env) && !is.null(global_env))
+        parent_env <- parent.env(global_env)
+    # no default env to parent env --> emptyenv()
+    if (is.null(parent_env))
+        parent_env <- emptyenv()
+    # change any function environment to global_env
+    # this is done before register functions in new env
+    if (!is.null(global_env))
+        dots <- lapply(dots, function(x) {
+            if (is.function(x))
+                environment(x) <- global_env
+            x
+        })
+    # register all elements in new env
+    env <- list2env(dots, envir = NULL, parent = parent_env, hash = TRUE)
+    # change global parent env to new env
+    if (!is.null(global_env))
+        parent.env(global_env) <- env
+    env
 }

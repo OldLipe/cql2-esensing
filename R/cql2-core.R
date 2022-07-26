@@ -68,12 +68,12 @@ minus_op <- function(a, b) {
 }
 
 # temporal literals
-timestamp <- function(x) {
+timestamp_lit <- function(x) {
     stopifnot(is_time(x))
     structure(list(timestamp = x), class = "cql2_timestamp")
 }
 
-date <- function(x) {
+date_lit <- function(x) {
     stopifnot(is_date(x))
     structure(list(date = x), class = "cql2_date")
 }
@@ -100,6 +100,7 @@ get_all_props <- function(expr) {
 
 # input property identifiers
 func_def <- function(a) {
+    if (exists(a, cql2_core_env, inherits = FALSE))
     stopifnot(is_func_name(a))
     function(...) {
 
@@ -116,25 +117,30 @@ get_all_funcs <- function(expr) {
 
 # ---- cql2 environments ----
 
-# environment of expression's identifiers (i.e. properties and functions)
-cql2_ident_env <- new_env(parent_env = emptyenv())
-
-# environment for cql2 core evaluation
-cql2_core_env <- new_env(
+# cql2
+cql2_global_env <- new_env(
     # basic R functions and constants
-    `{` =     `{`,
-    `(` =     `(`,
-    `T` =     TRUE,
-    `TRUE` =  TRUE,
-    `F` =     FALSE,
-    `FALSE` = FALSE,
-    list =    list,
-    c =       list,
-    `:` =     function(from, to) {
+    `{` =         `{`,
+    `(` =         `(`,
+    `T` =         TRUE,
+    `TRUE` =      TRUE,
+    `F` =         FALSE,
+    `FALSE` =     FALSE,
+    list =        list,
+    c =           list,
+    `:` =         function(from, to) {
         stopifnot(is_num(from))
         stopifnot(is_num(to))
         as.list(seq(from, to))
     },
+    parent_env = environment()
+)
+
+# environment of expression's identifiers (i.e. properties and functions)
+cql2_ident_env <- new_env(global_env = cql2_global_env)
+
+# environment for cql2 core evaluation
+cql2_core_env <- new_env(
     # cql2 basic expressions
     # Boolean expressions
     `&&` = new_logic_op("and"),
@@ -158,19 +164,19 @@ cql2_core_env <- new_env(
     `*` = new_math_op("*"),
     `/` = new_math_op("/"),
     # temporal literals
-    timestamp =  timestamp,
-    date =       date,
+    timestamp =  timestamp_lit,
+    date =       date_lit,
     interval =   interval_lit,
-    parent_env = cql2_ident_env
+    global_env = cql2_global_env
 )
 
-cql2_env <- function(expr) {
+cql2_env <- function(expr, queryables = NULL, functions = NULL) {
 
     # order of evaluation:
     # cql2_env --> cql2_core_env --> cql2_ident_env.
     # update `ident_env` environment with all input properties
-    list2env(get_all_props(expr), envir = cql2_ident_env)
-    list2env(get_all_funcs(expr), envir = cql2_ident_env)
+    list2env(get_all_props(expr), envir = cql2_ident_env) # ENDPOINT: queryables
+    list2env(get_all_funcs(expr), envir = cql2_ident_env) # ENDPOINT: functions
 
     cql2_core_env
     cql2_adv_comp_env
