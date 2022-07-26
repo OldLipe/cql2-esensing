@@ -68,12 +68,12 @@ minus_op <- function(a, b) {
 }
 
 # temporal literals
-time_inst <- function(x) {
+timestamp <- function(x) {
     stopifnot(is_time(x))
-    structure(list(timestamp = x), class = "cql2_time")
+    structure(list(timestamp = x), class = "cql2_timestamp")
 }
 
-date_inst <- function(x) {
+date <- function(x) {
     stopifnot(is_date(x))
     structure(list(date = x), class = "cql2_date")
 }
@@ -96,6 +96,22 @@ get_all_props <- function(expr) {
     props <- all_names(expr)
     names(props) <- props
     lapply(props, prop_ref)
+}
+
+# input property identifiers
+func_def <- function(a) {
+    stopifnot(is_func_name(a))
+    function(...) {
+
+        structure(list(`function` = list(name = a, args = list(...))),
+                  class = "cql2_func")
+    }
+}
+
+get_all_funcs <- function(expr) {
+    funcs <- all_calls(expr)
+    names(funcs) <- funcs
+    lapply(funcs, func_def)
 }
 
 # ---- cql2 environments ----
@@ -142,9 +158,8 @@ cql2_core_env <- new_env(
     `*` = new_math_op("*"),
     `/` = new_math_op("/"),
     # temporal literals
-    timestamp =  time_inst,
-    time =       time_inst,
-    date =       date_inst,
+    timestamp =  timestamp,
+    date =       date,
     interval =   interval_lit,
     parent_env = cql2_ident_env
 )
@@ -155,6 +170,7 @@ cql2_env <- function(expr) {
     # cql2_env --> cql2_core_env --> cql2_ident_env.
     # update `ident_env` environment with all input properties
     list2env(get_all_props(expr), envir = cql2_ident_env)
+    list2env(get_all_funcs(expr), envir = cql2_ident_env)
 
     cql2_core_env
     cql2_adv_comp_env

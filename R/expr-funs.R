@@ -1,7 +1,9 @@
 
 # ---- unquote !! ----
 
-is_bang <- function(x) {is.call(x) && length(x) == 2 && paste0(x[[1]]) == "!"}
+is_bang <- function(x) {
+    is.call(x) && length(x) == 2 && paste0(x[[1]]) %in% c("{", "!")
+}
 
 is_bangbang <- function(x) {is_bang(x) && is_bang(x[[2]])}
 
@@ -22,16 +24,17 @@ unquote <- function(expr, env) {
 
 #---- switch_expr ----
 
-is_vec <- function(x) is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")
+is_call_vec <- function(x) is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")
 
 call_args <- function(x) unname(as.list(x)[-1])
 
 is_literal <- function(x) {
-    switch(class(x)[[1]],
-           character = , numeric = , integer = ,
+    switch(typeof(x),
+           character = , double = , integer = ,
            logical =   TRUE,
+           list = all(vapply(x, is_literal, TRUE)),
            call =      {
-               if (is_vec(x))
+               if (is_call_vec(x))
                    all(vapply(call_args(x), is_literal, TRUE))
                else
                    FALSE
@@ -54,14 +57,13 @@ expr_type <- function(x) {
 
 switch_expr <- function(x, ...) {
     switch(expr_type(x), ...,
-           stop("cannot handle type '", class(x), "'", call. = FALSE))
+           stop("cannot handle type '", typeof(x), "'", call. = FALSE))
 }
 
 # ---- all names ----
 
 all_names_r <- function(x) {
     switch_expr(x,
-                list = list(),
                 constant = character(),
                 symbol =   paste0(x),
                 call =     unlist(lapply(as.list(x[-1]), all_names),

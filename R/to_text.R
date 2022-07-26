@@ -69,6 +69,22 @@ to_text.cql2_spatial_op <- function(x) {
 }
 
 #' @exportS3Method
+to_text.cql2_temporal_op <- function(x) {
+    paste0(
+        toupper(x$op), "(",
+        to_text(x$args[[1]]), ",",
+        to_text(x$args[[2]]),
+        ")"
+    )
+}
+
+#' @exportS3Method
+to_text.cql2_func <- function(x) {
+    args <- paste0(lapply(x$`function`$args, to_text), collapse = ",")
+    paste0(x$`function`$name, "(", args, ")")
+}
+
+#' @exportS3Method
 to_text.cql2_comp_op <- function(x)
     paste(to_text(x$args[[1]]), x$op, to_text(x$args[[2]]))
 
@@ -93,7 +109,7 @@ to_text.cql2_prop_ref <- function(x)
     x$property[[1]]
 
 #' @exportS3Method
-to_text.cql2_time <- function(x)
+to_text.cql2_timestamp <- function(x)
     paste0("TIMESTAMP(", to_text(x$timestamp), ")")
 
 #' @exportS3Method
