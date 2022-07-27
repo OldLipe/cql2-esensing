@@ -62,8 +62,7 @@ cql2_text <- function(expr) {
     expr <- substitute(expr, environment())
     # TODO: implement support for field filter-crs and detect crs inside expr
     structure(
-        list(`filter-lang` = "cql2-text",
-             filter = to_text(to_cql2(expr))),
+        list(`filter-lang` = "cql2-text", filter = to_text(to_cql2(expr))),
         class = "cql2_query"
     )
 }
@@ -74,8 +73,7 @@ cql2_json <- function(expr) {
     expr <- substitute(expr, environment())
     # TODO: implement support for field filter-crs and detect crs inside expr
     structure(
-        list(`filter-lang` = "cql2-json",
-             filter = to_json(to_cql2(expr))),
+        list(`filter-lang` = "cql2-json", filter = to_json(to_cql2(expr))),
         class = "cql2_query"
     )
 }

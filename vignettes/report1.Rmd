@@ -57,8 +57,8 @@ library(cql2exp)
 In R language, the JSON above could be represented by nested lists which would be somewhat cumbersome to write. To produce valid CQL2 filter expressions we use R abstract syntax tree (AST) from R expressions that can be converted either to TEXT or JSON formats. Let's see the same previous example written in R CQL2: 
 
 ```{r}
-cql2_text(vehicle_height > (bridge_clearance-1)) # TEXT format
-cql2_json(vehicle_height > (bridge_clearance-1)) # JSON format
+cql2_text(vehicle_height > (bridge_clearance - 1)) # TEXT format
+cql2_json(vehicle_height > (bridge_clearance - 1)) # JSON format
 ```
 
 In both cases, the same CQL2 object representation is built from the expression using AST of R expression evaluation. Then, the object is converted into TEXT or JSON format.

@@ -1,5 +1,7 @@
+# eval ----
+cql2_eval <- function(x) {eval(x, envir = cql2_global_env)}
 
-# ---- unquote !! ----
+# unquote {{}} ----
 
 is_bang <- function(x) {
     is.call(x) && length(x) == 2 && paste0(x[[1]]) %in% c("{", "!")
@@ -22,11 +24,13 @@ unquote <- function(expr, env) {
     else expr
 }
 
-#---- switch_expr ----
+# switch_expr ----
 
-is_call_vec <- function(x) is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")
+is_call_vec <- function(x) {
+    is.call(x) && paste0(x[[1]]) %in% c("list", "c", ":")
+}
 
-call_args <- function(x) unname(as.list(x)[-1])
+call_args <- function(x) {unname(as.list(x)[-1])}
 
 is_literal <- function(x) {
     switch(typeof(x),
@@ -60,7 +64,7 @@ switch_expr <- function(x, ...) {
            stop("cannot handle type '", typeof(x), "'", call. = FALSE))
 }
 
-# ---- all names ----
+# all names ----
 
 all_names_r <- function(x) {
     switch_expr(x,
@@ -74,7 +78,7 @@ all_names <- function(x) {
     unique(all_names_r(x))
 }
 
-# ---- all calls ----
+# all calls ----
 
 all_calls_r <- function(x) {
     switch_expr(x,
@@ -88,10 +92,11 @@ all_calls_r <- function(x) {
 }
 
 all_calls <- function(x) {
-    unique(all_calls_r(x))
+    setdiff(unique(all_calls_r(x)),
+            c(ls(cql2_global_env), ls(cql2_core_env), ls(cql2_adv_comp_env)))
 }
 
-# ---- new env ----
+# new env ----
 
 new_env <- function(..., parent_env = NULL, global_env = NULL) {
     dots <- list(...)
@@ -101,14 +106,6 @@ new_env <- function(..., parent_env = NULL, global_env = NULL) {
     # no default env to parent env --> emptyenv()
     if (is.null(parent_env))
         parent_env <- emptyenv()
-    # change any function environment to global_env
-    # this is done before register functions in new env
-    if (!is.null(global_env))
-        dots <- lapply(dots, function(x) {
-            if (is.function(x))
-                environment(x) <- global_env
-            x
-        })
     # register all elements in new env
     env <- list2env(dots, envir = NULL, parent = parent_env, hash = TRUE)
     # change global parent env to new env
@@ -116,3 +113,4 @@ new_env <- function(..., parent_env = NULL, global_env = NULL) {
         parent.env(global_env) <- env
     env
 }
+
