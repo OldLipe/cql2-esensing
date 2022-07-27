@@ -71,35 +71,35 @@ Fazer overview e falar como a expression deve ser avaliada como filtro.
 
 ### Data types and literal values
 
-- character string
+#### character string
 
 ```{R}
 cql2_text("Via dell'Avvento")
 cql2_json("Via dell'Avvento")
 ```
 
-- number
+#### number
 
 ```{R}
 cql2_text(3.1415)
 cql2_json(-100)
 ```
 
-- boolean
+#### boolean
 
 ```{R}
 cql2_text(TRUE)
 cql2_json(FALSE)
 ```
 
-- timestamp
+#### timestamp
 
 ```{R}
 cql2_text(timestamp("1969-07-20T20:17:40Z"))
 cql2_json(timestamp("1969-07-20T20:17:40Z"))
 ```
 
-- date
+#### date
 
 ```{R}
 cql2_text(date("1969-07-20"))

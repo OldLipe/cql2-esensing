@@ -77,3 +77,8 @@ cql2_json <- function(expr) {
         class = "cql2_query"
     )
 }
+
+#' @exportS3Method
+print.cql2_query <- function(x, ...) {
+    cat(x$filter)
+}
