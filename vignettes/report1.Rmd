@@ -24,7 +24,7 @@ CQL2 is an OGC standard that enables complex filter expressions on OAFeat3 or ST
 
 Let's start with an simple example. In the following code, we have a valid CQL2 expression (in TEXT format) which refers to two properties `vehicle_height` and `bridge_clearance`.
 
-```{txt}
+```{verbatim}
 vehicle_height > (bridge_clearance-1)
 ```
 
@@ -63,13 +63,17 @@ cql2_json(vehicle_height > (bridge_clearance - 1)) # JSON format
 
 In both cases, the same CQL2 object representation is built from the expression using AST of R expression evaluation. Then, the object is converted into TEXT or JSON format.
 
-Sometimes, CQL2 filters in TEXT format is represented in the same way as in R expression. However this should not be always the case, as we can see in some examples provided bellow.
+Sometimes, CQL2 filters in TEXT format is represented in the same way as in R expression. However this should not be always the case, as we can see in some examples provided below.
 
 ## Basic CQL2
 
-Fazer overview e falar como a expression deve ser avaliada como filtro.
+A Basic CQL2 filter expression can be constructed by logically connecting one or more comparison predicates. 
 
 ### Data types and literal values
+
+A literal value is any part of an CQL2 filter expression that is used exactly as it is specified in the expression.
+
+The scalar data types are: `character string`, `number`, `boolean`, `timestamp`, and `date`. 
 
 #### character string
 
@@ -108,12 +112,20 @@ cql2_json(date("1969-07-20"))
 
 ### Property references
 
+Property of an item can be evaluated in the CQL2 filter expression by its name.
+
 ```{R}
 cql2_text(windSpeed > 1)
 cql2_json(windSpeed > 1)
 ```
 
+> Note: Properties supported by a service should be listed in endpoint `/collections/{collection_id}/queryables`.
+
 ### Standard comparison predicates
+
+A comparison predicate evaluates if two scalar expressions satisfy the specified comparison operator.
+
+The standard comparison operators are: `=`, `!=`, `<`, `>`, `<=`, `>=`, and `IS NULL`.
 
 ```{R}
 cql2_text(city == "Crato")
@@ -130,26 +142,91 @@ cql2_text(balance - 150.0 > 0)
 cql2_json(balance - 150.0 > 0)
 ```
 
-
 ```{R}
 cql2_text(updated >= date('1970-01-01'))
 cql2_json(updated >= date('1970-01-01'))
 ```
 
-- NULL predicate
+#### IS NULL operator
 
 ```{R}
 cql2_text(!is_null(geometry))
 cql2_json(!is_null(geometry))
 ```
 
-### Common Query Language enhancements
+## Common Query Language enhancements
+
+### Advanced comparison operators
+
+A comparison predicate evaluates if two scalar expressions satisfy the specified comparison operator.
+
+Advanced comparison operators are: `LIKE`, `BETWEEN`, and `IN`.
+
+#### LIKE operator
 
 ```{R}
-
+cql2_text(name %like% "Smith%")
+cql2_json(name %like% "Smith%")
 ```
 
-## Concluding remarks
+#### BETWEEN operator
 
+```{R}
+cql2_text(between(depth, 100.0, 150.0))
+cql2_json(between(depth, 100.0, 150.0))
+```
+
+#### IN operator
+```{R}
+cql2_text(cityName %in% list('Toronto', 'Frankfurt', 'Tokyo', 'New York'))
+cql2_json(cityName %in% list('Toronto', 'Frankfurt', 'Tokyo', 'New York'))
+```
+```{R}
+cql2_text(!category %in% list(1, 2, 3, 4))
+cql2_json(!category %in% list(1, 2, 3, 4))
+```
+
+### Spatial operators
+
+A spatial predicate evaluates if two spatial expressions satisfy the specified spatial operator.
+
+The supported spatial operators are: `S_INTERSECTS`, `S_EQUALS`, `S_DISJOINT`, `S_TOUCHES`, `S_WITHIN`, `S_OVERLAPS`, `S_CROSSES`, and `S_CONTAINS`. 
+
+
+```{R, message=FALSE}
+poly_sf <- sfheaders::sf_polygon(matrix(c(0,0,0,0,1,1), ncol = 2))
+cql2_text(s_intersects(geometry, {{poly_sf}}))
+cql2_json(s_intersects(geometry, {{poly_sf}}))
+```
+
+> Note: We will use the `sfheaders` package to represent spatial geometries. The `sfheaders` package is backwards compatible with the `sf` package.
+
+> Note: We provide an escape to evaluate user variables using `{{` or `!!`. Both symbols are largely used in R Data Science community.
+
+### Temporal operators
+
+A temporal predicate evaluates if two temporal expressions satisfy the specified temporal operator.
+
+The supported temporal operators are: `T_AFTER`, `T_BEFORE`, `T_CONTAINS`, `T_DISJOINT`, `T_DURING`, `T_EQUALS`, `T_FINISHEDBY`, `T_FINISHES`, `T_INTERSECTS`, `T_MEETS`, `T_METBY`, `T_OVERLAPPEDBY`, `T_OVERLAPS`, `T_STARTEDBY`, and `T_STARTS`.
+
+```{R}
+cql2_text(t_intersects(event_date, interval("1969-07-16T05:32:00Z", "1969-07-24T16:50:35Z")))
+cql2_json(t_intersects(event_date, interval("1969-07-16T05:32:00Z", "1969-07-24T16:50:35Z")))
+```
+
+### Support for functions in CQL2
+
+Functions allow implementations to extend the language.
+
+#### Example of a function that returns a geometry value.
+
+```{R}
+cql2_text(s_within(road, Buffer(geometry, 10, "m")))
+cql2_json(s_within(road, Buffer(geometry, 10, "m")))
+```
+
+> Note: Functions supported by a service should be listed in endpoint `/functions`.
+
+## Concluding remarks
 
 To do this, we use the abstract syntax tree (AST) of R language and implemented a set of CQL2 functions (core and advanced extension).

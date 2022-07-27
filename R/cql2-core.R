@@ -17,6 +17,8 @@
 # Boolean expressions
 new_logic_op <- function(op) {
     function(a, b) {
+        a <- cql2_eval(a)
+        b <- cql2_eval(b)
         stopifnot(is_bool_expr(a))
         stopifnot(is_bool_expr(b))
         structure(list(op = op, args = list(a, b)),

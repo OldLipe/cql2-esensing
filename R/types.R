@@ -67,7 +67,7 @@ is_obj <- function(x) {
 # check Boolean expression
 is_bool_expr <- function(x) {
     inherits(x, c("cql2_logic_op", "cql2_not_op",
-                  "cql2_comp_op", "cql2_like_op",
+                  "cql2_in_op", "cql2_comp_op", "cql2_like_op",
                   "cql2_between_op", "cql2_inlist_op",
                   "cql2_isnull_op", "cql2_spat_pred",
                   "cql2_temp_pred", "cql2_array_pred", "logical"))

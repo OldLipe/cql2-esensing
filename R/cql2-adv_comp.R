@@ -9,6 +9,8 @@
 
 # like_op
 like_op <- function(a, b) {
+    a <- cql2_eval(a)
+    b <- cql2_eval(b)
     stopifnot(is_str_expr(a))
     stopifnot(is_patt_expr(b))
     structure(list(op = "like", args = list(a, b)), class = "cql2_like_op")
@@ -16,6 +18,9 @@ like_op <- function(a, b) {
 
 # between_op
 between_op <- function(a, b, c) {
+    a <- cql2_eval(a)
+    b <- cql2_eval(b)
+    c <- cql2_eval(c)
     stopifnot(is_num_expr(a))
     stopifnot(is_num_expr(b))
     stopifnot(is_num_expr(c))
@@ -25,6 +30,8 @@ between_op <- function(a, b, c) {
 
 # in_op
 in_op <- function(a, b) {
+    a <- cql2_eval(a)
+    b <- cql2_eval(b)
     stopifnot(is_scalar(a))
     stopifnot(is_scalar_lst(b))
     structure(list(op = "in", args = list(a, b)), class = "cql2_in_op")
@@ -32,14 +39,16 @@ in_op <- function(a, b) {
 
 # spatial_op
 spatial_op <- function(op) {
-    function(geom1, geom2) {
-        stopifnot(is_spatial_expr(geom1))
-        stopifnot(is_spatial_expr(geom2))
-        if (is_spatial(geom1))
-            geom1 <- get_spatial_sfc(geom1)
-        if (is_spatial(geom2))
-            geom2 <- get_spatial_sfc(geom2)
-        structure(list(op = op, args = list(geom1, geom2)),
+    function(a, b) {
+        a <- cql2_eval(a)
+        b <- cql2_eval(b)
+        stopifnot(is_spatial_expr(a))
+        stopifnot(is_spatial_expr(b))
+        if (is_spatial(a))
+            a <- get_spatial_sfc(a)
+        if (is_spatial(b))
+            b <- get_spatial_sfc(b)
+        structure(list(op = op, args = list(a, b)),
                   class = "cql2_spatial_op")
     }
 }
@@ -51,6 +60,8 @@ get_spatial_sfc <- function(geom) {
 # temporal_op
 temporal_op <- function(op) {
     function(a, b) {
+        a <- cql2_eval(a)
+        b <- cql2_eval(b)
         stopifnot(is_temporal_expr(a))
         stopifnot(is_temporal_expr(b))
 

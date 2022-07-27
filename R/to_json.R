@@ -4,11 +4,11 @@
 json_quote <- function(x) paste0('"', x, '"')
 
 json_lst <- function(x)
-    paste0("[ ", paste0(lapply(x, to_json), collapse = ", "), " ]")
+    paste0("[", paste0(lapply(x, to_json), collapse = ","), "]")
 
 json_obj <- function(x)
-    paste0("{ ", paste0(json_quote(names(x)), ": ",
-                        unname(lapply(x, to_json)), collapse = ", "), " }")
+    paste0("{", paste0(json_quote(names(x)), ":",
+                        unname(lapply(x, to_json)), collapse = ","), "}")
 
 # ---- convert to json ----
 
