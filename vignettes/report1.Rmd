@@ -39,7 +39,27 @@ div.mybox strong {
 
 ## Introduction
 
-This document reports partial results of CQL2 development. As stated in the project, the first milestone is the development of a "proof of concept" version, from which we can validate the idea of package implementation. In this report, we show how CQL2 package works and provide a variety of examples of its use. The current version of CQL2 package can be accessed in https://github.com/e-sensing/cql2exp.
+In this report, we show how CQL2 package works and provide a variety of examples of its use. The current version of CQL2 package can be accessed in https://github.com/e-sensing/cql2exp.
+
+## Project status
+
+This document reports partial results of CQL2 development. As stated in the project, the first milestone is the development of a "proof of concept" version (milestone 1, activities A1 and A2), from which we can validate the idea of package implementation. 
+
+The milestones of the project are:
+
+1. Proof of concept version with examples that validate the idea of using the package (activities A1 and A2).
+2. Implementing integration testing with STAC services supporting CQL2 (activities A3 and A4).
+3. Pre-release version with documentation and testing (activity A5). 
+4. CRAN submission and tutorial creation for users and developers (activity A6).
+
+Description of activities (M stands for project month):
+
+* A1: Implement basic functionality, types, objects, and constants, as defined in the CQL2 specification (M1-2). 
+* A2: Map expressions syntactically from R to CQL2 (M2-3). 
+* A3: Perform the tests on a STAC API endpoint that supports advanced searches using CQL2 (M4-5). 
+* A4: Implement additional endpoints and JSON fragments to provide full support for the OAFeat CQL2 extension (M4). 
+* A5: Write tutorials designed for new users on how to use the CQL2 filter in STAC APIs endpoint that implement the specification (M6). 
+* A6: Submit the package to CRAN (M6). 
 
 ## CQL2 filter standard
 
@@ -254,9 +274,7 @@ cql2_json(s_within(road, Buffer(geometry, 10, "m")))
 
 This report describes the delivery of the milestone "Proof of concept version with examples that validate the idea of using the package." 
 
-To complete this milestone, activities A1 and A2 were performed.
-
-We are now in month 2 (M2) of the project. This milestone was scheduled to be delivered in month 3 (M3), after the completion of activity A2. This early delivery will allow us to work with more time on the remaining activities.
+To complete this milestone, activities A1 and A2 were performed. We are now in month 2 (M2) of the project. This milestone was scheduled to be delivered in month 3 (M3), after the completion of activity A2. This early delivery will allow us to work with more time on the remaining activities.
 
 The next step of the project is to complete the milestone "Implementing integration testing with STAC services supporting CQL2" which involves activities A3 and A4. This integration will be performed on the Microsoft Planetary computer service.
 
