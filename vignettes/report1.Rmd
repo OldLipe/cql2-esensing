@@ -3,12 +3,12 @@ title: |
   | CQL2 development report 
   |  Milestone: `Proof of concept version with examples
   that validates the idea of using the package' 
-classoption: table
 output:
   pdf_document:
       toc: FALSE
       df_print: tibble
       dev: "cairo_pdf"
+      pandoc_args: "--listings"
       latex_engine: "xelatex"
       includes:
         before_body: "/home/sits/cql2exp/latex/before_body.tex"
@@ -20,6 +20,7 @@ output:
         google: IBM Plex Serif
       code_font:
         google: IBM Plex Mono
+classoption: x11names
 fontsize: 10,5pt
 indent: yes
 vignette: "%\\VignetteIndexEntry{CQL2 development report} %\\VignetteEngine{knitr::rmarkdown}
@@ -29,7 +30,8 @@ vignette: "%\\VignetteIndexEntry{CQL2 development report} %\\VignetteEngine{knit
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.show = "hold"
 )
 ```
 
@@ -114,36 +116,32 @@ A literal value is any part of a CQL2 filter expression used the same as specifi
 
 The scalar data types are: `character string`, `number`, `boolean`, `timestamp`, and `date`. 
 
-#### character string
-
+**character string**
 ```{r}
 cql2_text("Via dell'Avvento")
 cql2_json("Via dell'Avvento")
 ```
 
-#### number
 
+**number**
 ```{r}
 cql2_text(3.1415)
 cql2_json(-100)
 ```
 
-#### boolean
-
+**boolean**
 ```{r}
 cql2_text(TRUE)
 cql2_json(FALSE)
 ```
 
-#### timestamp
-
+**timestamp**
 ```{r}
 cql2_text(timestamp("1969-07-20T20:17:40Z"))
 cql2_json(timestamp("1969-07-20T20:17:40Z"))
 ```
 
-#### date
-
+**date**
 ```{R}
 cql2_text(date("1969-07-20"))
 cql2_json(date("1969-07-20"))
@@ -186,7 +184,7 @@ cql2_text(updated >= date('1970-01-01'))
 cql2_json(updated >= date('1970-01-01'))
 ```
 
-#### IS NULL operator
+**`IS NULL` operator**
 
 ```{R}
 cql2_text(!is_null(geometry))
@@ -201,21 +199,22 @@ A comparison predicate evaluates if two scalar expressions satisfy the specified
 
 Advanced comparison operators are: `LIKE`, `BETWEEN`, and `IN`.
 
-#### LIKE operator
+**`LIKE` operator**
 
 ```{R}
 cql2_text(name %like% "Smith%")
 cql2_json(name %like% "Smith%")
 ```
 
-#### BETWEEN operator
+**`BETWEEN` operator**
 
 ```{R}
 cql2_text(between(depth, 100.0, 150.0))
 cql2_json(between(depth, 100.0, 150.0))
 ```
 
-#### IN operator
+**`IN` operator**
+
 ```{R}
 cql2_text(cityName %in% list('Toronto', 'Frankfurt', 'Tokyo', 'New York'))
 cql2_json(cityName %in% list('Toronto', 'Frankfurt', 'Tokyo', 'New York'))
@@ -257,7 +256,7 @@ cql2_json(t_intersects(event_date, interval("1969-07-16T05:32:00Z", "1969-07-24T
 
 Functions allow implementations to extend the language.
 
-#### Example of a function that returns a geometry value.
+**Example of a function that returns a geometry value.**
 
 ```{R}
 cql2_text(s_within(road, Buffer(geometry, 10, "m")))
