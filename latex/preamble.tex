@@ -7,12 +7,17 @@
 %\usepackage[bf,singlelinecheck=off]{caption}
 \usepackage{float}
 %\usepackage[x11names]{xcolor}
-\usepackage{xcolor}
+%\usepackage{xcolor}
+%\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 \usepackage[T1]{fontenc}
 \usepackage[usefilenames,RMstyle={Text,Semibold},SSstyle={Text,Semibold},TTstyle={Text,Semibold}]{plex-otf} %Use IBM Plex font family
 
 \usepackage{framed,color}
+%\usepackage[x11names]{xcolor}
+\usepackage{xcolor}
 \definecolor{shadecolor}{RGB}{248,248,248}
+\definecolor{DarkOliveGreen}{RGB}{85,107,47}
+\definecolor{Red4}{RGB}{139,0,0}
 
 \usepackage{amsmath} % good math formulas
 \usepackage{microtype}
@@ -24,8 +29,8 @@
 \usepackage{listings}
 \usepackage{fancyvrb}
 \lstdefinelanguage{R}{%
-  keywordsprefix=sits,
-  morekeywords={dplyr, filter, file, library, plot, system,
+  keywordsprefix=cql2_text,
+  morekeywords={dplyr, filter, file, cql2_text, cql2_json, library, plot, system,
     apply, classify, cube, get_data, label_classification,
     labels, smooth, uncertainty,
     accuracy, confidence_sampling,
@@ -50,9 +55,8 @@
   frame=single,
   numbers=left,
   basicstyle=\small\ttfamily,
-  %stringstyle=\color{Sienna4},
   commentstyle=\color{DarkOliveGreen},
-  %keywordstyle=\color{Red4},
+  keywordstyle=\color{Red4},
   keywordstyle=[2]\color{black},
   columns=flexible,
   showstringspaces=false,
@@ -61,6 +65,8 @@
   backgroundcolor=\color{shadecolor},
   fancyvrb=true
 }
+
+
 % Add your keywords here, and have this in a separate file
 % and include it in your preamble
 % \lstset{emph={cube,classify},
