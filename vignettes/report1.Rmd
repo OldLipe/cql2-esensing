@@ -37,27 +37,29 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-This report shows how the CQL2 package works and provides various examples of its use. The current version of the CQL2 package can be accessed at https://github.com/e-sensing/cql2exp.
+This report describes the activities performed in the first 3 months of the development project of CQL2 extension for R. The activities conducted are related to the first milestone of the project, scheduled to end on August 31, 2022. The report shows how the current CQL2 extension works in R and provides various examples of its use. The current version of the CQL2 extension can be accessed at https://github.com/e-sensing/cql2exp.
 
-## Project status
-
-This document reports partial results of CQL2 development. As stated in the project, the first milestone is the development of a "proof of concept" version (milestone 1, activities A1 and A2), from which we can validate the idea of package implementation. 
+## Project milestones
 
 The milestones of the project are:
 
-1. Proof of concept version with examples that validate the idea of using the package (activities A1 and A2).
-2. Implementing integration testing with STAC services supporting CQL2 (activities A3 and A4).
-3. Pre-release version with documentation and testing (activity A5). 
-4. CRAN submission and tutorial creation for users and developers (activity A6).
+-   **1.** Proof of concept version with examples that validate the idea of using the package (activities **A1** and **A2**).
+-   **2.** Implementing integration testing with STAC services supporting CQL2 (activities **A3** and **A4**).
+-   **3.** Pre-release version with documentation and testing (activity **A5**).
+-   **4.** CRAN submission and tutorial creation for users and developers (activity **A6**).
 
-Description of activities (M stands for project month):
+Description of activities (**M** stands for project month):
 
-* A1: Implement basic functionality, types, objects, and constants, as defined in the CQL2 specification (M1-2). 
-* A2: Map expressions syntactically from R to CQL2 (M2-3). 
-* A3: Perform the tests on a STAC API endpoint that supports advanced searches using CQL2 (M4-5). 
-* A4: Implement additional endpoints and JSON fragments to provide full support for the OAFeat CQL2 extension (M4). 
-* A5: Write tutorials designed for new users on how to use the CQL2 filter in STAC APIs endpoint that implement the specification (M6). 
-* A6: Submit the package to CRAN (M6). 
+-   **A1**: Implement basic functionality, types, objects, and constants, as defined in the CQL2 specification (**M1-2**).
+-   **A2**: Map expressions syntactically from R to CQL2 (**M2-3**).
+-   **A3**: Perform the tests on a STAC API endpoint that supports advanced searches using CQL2 (**M4-5**).
+-   **A4**: Implement additional endpoints and JSON fragments to provide full support for the OAFeat CQL2 extension (**M4**).
+-   **A5**: Write tutorials designed for new users on how to use the CQL2 filter in STAC APIs endpoint that implement the specification (**M6**).
+-   **A6**: Submit the package to CRAN (**M6**).
+
+## Project status
+
+This document reports partial results of CQL2 development. As stated in the project, the first milestone is the development of a "proof of concept" version (milestone **1**, activities **A1** and **A2**), from which we can validate the idea of package implementation.
 
 ## CQL2 filter standard
 
@@ -87,7 +89,7 @@ This filter expression can be passed in the HTTP GET verb implemented by service
 }
 ```
 
-Note how properties `vehicle_height` and `bridge_clearance` are represented in this format. They are elements of an object containing a `property` member. Also, they go as arguments of operators (in this case,`>` and `-` operators). 
+Note how properties `vehicle_height` and `bridge_clearance` are represented in this format. They are elements of an object containing a `property` member. Also, they go as arguments of operators (in this case,`>` and `-` operators).
 
 ## Converting R expressions into CQL2 syntax
 
@@ -95,7 +97,7 @@ Note how properties `vehicle_height` and `bridge_clearance` are represented in t
 library(cql2exp)
 ```
 
-In the R language, the JSON above could be represented by nested lists, which would be somewhat cumbersome to write. To produce valid CQL2 filter expressions, we use the R abstract syntax tree (AST) from R expressions that can be converted to TEXT or JSON formats. Let us see the same previous example written in R CQL2: 
+In the R language, the JSON above could be represented by nested lists, which would be somewhat cumbersome to write. To produce valid CQL2 filter expressions, we use the R abstract syntax tree (AST) from R expressions that can be converted to TEXT or JSON formats. Let us see the same previous example written in R CQL2:
 
 ```{r}
 cql2_text(vehicle_height > (bridge_clearance - 1)) # TEXT format
@@ -108,40 +110,47 @@ Sometimes, CQL2 filters in TEXT format is represented in the same way as in R ex
 
 ## Basic CQL2
 
-CQL2 filters in TEXT format are sometimes represented the same way as in R expression. However, this should not always be the case, as some examples show.
+CQL2 filters in TEXT format are sometimes represented the same way as in R expression.
 
 ### Data types and literal values
 
 A literal value is any part of a CQL2 filter expression used the same as specified in the expression.
 
-The scalar data types are: `character string`, `number`, `boolean`, `timestamp`, and `date`. 
+The scalar data types are: `string`, `number`, `boolean`, `timestamp`, and `date`.
 
-**character string**
+**string**
+
 ```{r}
 cql2_text("Via dell'Avvento")
 cql2_json("Via dell'Avvento")
 ```
 
-
 **number**
+
 ```{r}
 cql2_text(3.1415)
 cql2_json(-100)
 ```
 
 **boolean**
+
 ```{r}
 cql2_text(TRUE)
 cql2_json(FALSE)
 ```
 
 **timestamp**
+
 ```{r}
 cql2_text(timestamp("1969-07-20T20:17:40Z"))
 cql2_json(timestamp("1969-07-20T20:17:40Z"))
 ```
 
+\
+\
+
 **date**
+
 ```{R}
 cql2_text(date("1969-07-20"))
 cql2_json(date("1969-07-20"))
@@ -219,20 +228,24 @@ cql2_json(between(depth, 100.0, 150.0))
 cql2_text(cityName %in% list('Toronto', 'Frankfurt', 'Tokyo', 'New York'))
 cql2_json(cityName %in% list('Toronto', 'Frankfurt', 'Tokyo', 'New York'))
 ```
+
 ```{R}
 cql2_text(!category %in% list(1, 2, 3, 4))
 cql2_json(!category %in% list(1, 2, 3, 4))
 ```
 
+
 ### Spatial operators
 
 A spatial predicate evaluates if two spatial expressions satisfy the specified spatial operator.
 
-The supported spatial operators are: `S_INTERSECTS`, `S_EQUALS`, `S_DISJOINT`, `S_TOUCHES`, `S_WITHIN`, `S_OVERLAPS`, `S_CROSSES`, and `S_CONTAINS`. 
-
+The supported spatial operators are: `S_INTERSECTS`, `S_EQUALS`, `S_DISJOINT`, `S_TOUCHES`, `S_WITHIN`, `S_OVERLAPS`, `S_CROSSES`, and `S_CONTAINS`.
 
 ```{R, message=FALSE}
 poly_sf <- sfheaders::sf_polygon(matrix(c(0,0,0,0,1,1), ncol = 2))
+```
+
+```{R}
 cql2_text(s_intersects(geometry, {{poly_sf}}))
 cql2_json(s_intersects(geometry, {{poly_sf}}))
 ```
@@ -267,8 +280,8 @@ cql2_json(s_within(road, Buffer(geometry, 10, "m")))
 
 ## Concluding remarks
 
-This report describes the delivery of the milestone "Proof of concept version with examples that validate the idea of using the package." 
+This report describes the delivery of the first milestone, named "Proof of concept version with examples that validate the idea of using the package."
 
-To complete this milestone, activities A1 and A2 were performed. We are now in month 2 (M2) of the project. This milestone was scheduled to be delivered in month 3 (M3) after the completion of activity A2. This early delivery will allow us to work with more time on the remaining activities.
+To complete this milestone, activities **A1** and **A2** were performed. This milestone was scheduled to be delivered in current month (**M3**, after the completion of activity **A2**).
 
-The project's next step is to complete the milestone "Implementing integration testing with STAC services supporting CQL2", which involves activities A3 and A4. This integration will be performed on the Microsoft Planetary computer service.
+The project's next step is to complete the second milestone, named "Implementing integration testing with STAC services supporting CQL2", which involves activities **A3** and **A4**. This integration will be performed on the Microsoft Planetary computer service.
