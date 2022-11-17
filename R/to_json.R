@@ -18,13 +18,36 @@ to_json <- function(x) UseMethod("to_json", x)
 to_json.character <- function(x) json_quote(x)
 
 #' @exportS3Method
-to_json.numeric <- function(x) paste0(x)
+to_json.numeric <- function(x) {
+    if (length(x) == 1) {
+        paste0(x)
+    } else {
+        to_json(as.list(x))
+    }
+}
 
 #' @exportS3Method
-to_json.integer <- function(x) paste0(x)
+to_json.integer <- function(x) {
+    if (length(x) == 1) {
+        paste0(x)
+    } else {
+        to_json(as.list(x))
+    }
+}
 
 #' @exportS3Method
-to_json.logical <- function(x) if (x) "true" else "false"
+to_json.logical <- function(x)  {
+    if (length(x) == 1) {
+        if (x) "true" else "false"
+    } else {
+        to_json(as.list(x))
+    }
+}
+
+#' @exportS3Method
+to_json.matrix <- function(x) {
+    to_json(apply(x, 1, c, simplify = FALSE))
+}
 
 #' @exportS3Method
 to_json.list <- function(x) {
@@ -37,11 +60,7 @@ to_json.list <- function(x) {
 }
 
 #' @exportS3Method
-to_json.sf <- function(x) to_json.sfc(x$geometry)
-
-# TODO: this can be implemented, use this package for testing
-#' @exportS3Method
-to_json.sfc <- function(x) geojsonsf::sfc_geojson(x)
+to_json.cql2_spatial <- function(x) json_obj(x)
 
 #' @exportS3Method
 to_json.cql2_logic_op <- function(x) json_obj(x)

@@ -113,4 +113,3 @@ new_env <- function(..., parent_env = NULL, global_env = NULL) {
         parent.env(global_env) <- env
     env
 }
-

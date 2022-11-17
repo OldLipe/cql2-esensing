@@ -13,7 +13,8 @@ like_op <- function(a, b) {
     b <- cql2_eval(b)
     stopifnot(is_str_expr(a))
     stopifnot(is_patt_expr(b))
-    structure(list(op = "like", args = list(a, b)), class = "cql2_like_op")
+    structure(list(op = "like", args = list(a, b)),
+              class = c("cql2_like_op", "list"))
 }
 
 # between_op
@@ -25,7 +26,7 @@ between_op <- function(a, b, c) {
     stopifnot(is_num_expr(b))
     stopifnot(is_num_expr(c))
     structure(list(op = "between", args = list(a, b, c)),
-              class = "cql2_between_op")
+              class = c("cql2_between_op", "list"))
 }
 
 # in_op
@@ -34,7 +35,8 @@ in_op <- function(a, b) {
     b <- cql2_eval(b)
     stopifnot(is_scalar(a))
     stopifnot(is_scalar_lst(b))
-    structure(list(op = "in", args = list(a, b)), class = "cql2_in_op")
+    structure(list(op = "in", args = list(a, b)),
+              class = c("cql2_in_op", "list"))
 }
 
 # spatial_op
@@ -45,16 +47,54 @@ spatial_op <- function(op) {
         stopifnot(is_spatial_expr(a))
         stopifnot(is_spatial_expr(b))
         if (is_spatial(a))
-            a <- get_spatial_sfc(a)
+            a <- get_spatial(a)
         if (is_spatial(b))
-            b <- get_spatial_sfc(b)
+            b <- get_spatial(b)
         structure(list(op = op, args = list(a, b)),
-                  class = "cql2_spatial_op")
+                  class = c("cql2_spatial_op", "list"))
     }
 }
 
-get_spatial_sfc <- function(geom) {
-    return(geom)
+get_spatial <- function(x) {
+    UseMethod("get_spatial", x)
+}
+
+spatial_types <- c("Point", "MultiPoint", "LineString",
+                   "MultiLineString", "Polygon", "MultiPolygon",
+                   "GeometryCollection")
+
+#' @export
+get_spatial.list <- function(x) {
+    stopifnot(c("type", "coordinates") %in% names(x))
+    stopifnot(x[["type"]] %in% spatial_types)
+    stopifnot(is.list(x[["coordinates"]]))
+    class(x) <- c("cql2_spatial", "list")
+    x
+}
+
+#' @export
+get_spatial.sf <- function(x) get_spatial.sfg(sf::st_geometry(x)[[1]])
+
+#' @export
+get_spatial.sfc <- function(x) get_spatial.sfg(x[[1]])
+
+#' @export
+get_spatial.sfg <- function(x) {
+    names(spatial_types) <- toupper(spatial_types)
+
+    geom_type <- spatial_types[[as.character(sf::st_geometry_type(x))]]
+    structure(
+        list(type = geom_type, coordinates = unclass(x)),
+        class = c("cql2_spatial", "list")
+    )
+}
+
+#' @export
+get_spatial.GEOMETRYCOLLECTION <- function(x) {
+    structure(
+        list(type = "GeometryCollection", geometries = lapply(x, get_spatial)),
+        class = c("cql2_spatial", "list")
+    )
 }
 
 # temporal_op
@@ -66,7 +106,7 @@ temporal_op <- function(op) {
         stopifnot(is_temporal_expr(b))
 
         structure(list(op = op, args = list(a, b)),
-                  class = "cql2_temporal_op")
+                  class = c("cql2_temporal_op", "list"))
     }
 }
 

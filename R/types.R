@@ -21,7 +21,8 @@ is_scalar <- function(x) {
 
 is_spatial <- function(x) {
     inherits(x, "sf")  && nrow(x) == 1 ||
-    inherits(x, "sfc") && length(x) == 1
+    inherits(x, "sfc") && length(x) == 1 ||
+    inherits(x, "sfg")
 }
 
 # input check ----
@@ -69,8 +70,8 @@ is_bool_expr <- function(x) {
     inherits(x, c("cql2_logic_op", "cql2_not_op",
                   "cql2_in_op", "cql2_comp_op", "cql2_like_op",
                   "cql2_between_op", "cql2_inlist_op",
-                  "cql2_isnull_op", "cql2_spat_pred",
-                  "cql2_temp_pred", "cql2_array_pred", "logical"))
+                  "cql2_isnull_op", "cql2_spatial_op",
+                  "cql2_temporal_op", "cql2_array_pred", "logical"))
 }
 
 # check is_null operand
@@ -99,7 +100,7 @@ is_patt_expr <- function(x) {
 }
 
 is_spatial_expr <- function(x) {
-    is_spatial(x) || is_str(x) ||
+    is_spatial(x) || is_str(x) || is_obj(x) ||
     inherits(x, c("cql2_prop_ref", "cql2_func"))
 }
 

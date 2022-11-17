@@ -22,14 +22,15 @@ new_logic_op <- function(op) {
         stopifnot(is_bool_expr(a))
         stopifnot(is_bool_expr(b))
         structure(list(op = op, args = list(a, b)),
-                  class = "cql2_logic_op")
+                  class = c("cql2_logic_op", "list"))
     }
 }
 
 not_op <- function(a) {
     a <- cql2_eval(a)
     stopifnot(is_bool_expr(a))
-    structure(list(op = "not", args = list(a)), class = "cql2_not_op")
+    structure(list(op = "not", args = list(a)),
+              class = c("cql2_not_op", "list"))
 }
 
 # binary comparison operators
@@ -40,7 +41,7 @@ new_comp_op <- function(op) {
         stopifnot(is_scalar(a))
         stopifnot(is_scalar(b))
         structure(list(op = op, args = list(a, b)),
-                  class = "cql2_comp_op")
+                  class = c("cql2_comp_op", "list"))
     }
 }
 
@@ -49,7 +50,7 @@ isnull_op <- function(a) {
     a <- cql2_eval(a)
     stopifnot(is_isnull_operand(a))
     structure(list(op = "isNull", args = list(a)),
-              class = "cql2_isnull_op")
+              class = c("cql2_isnull_op", "list"))
 }
 
 # basic math operators
@@ -60,7 +61,7 @@ new_math_op <- function(op) {
         stopifnot(is_num_expr(a))
         stopifnot(is_num_expr(b))
         structure(list(op = op, args = list(a, b)),
-                  class = "cql2_math_op")
+                  class = c("cql2_math_op", "list"))
     }
 }
 
@@ -75,7 +76,7 @@ minus_op <- function(a, b) {
         args <- list(a, b)
     }
     structure(list(op = "-", args = args),
-              class = "cql2_minus_op")
+              class = c("cql2_minus_op", "list"))
 }
 
 # temporal literals
@@ -83,14 +84,14 @@ timestamp_lit <- function(x) {
     x <- cql2_eval(x)
     stopifnot(is_time(x))
     structure(list(timestamp = x),
-              class = "cql2_timestamp")
+              class = c("cql2_timestamp", "list"))
 }
 
 date_lit <- function(x) {
     x <- cql2_eval(x)
     stopifnot(is_date(x))
     structure(list(date = x),
-              class = "cql2_date")
+              class = c("cql2_date", "list"))
 }
 
 interval_lit <- function(start = "..", end = "..") {
@@ -101,7 +102,7 @@ interval_lit <- function(start = "..", end = "..") {
     if (end != "..")
         stopifnot(is_temporal(end))
     structure(list(interval = list(start, end)),
-              class = "cql2_interval")
+              class = c("cql2_interval", "list"))
 }
 
 # input property identifiers
@@ -109,7 +110,7 @@ prop_ref <- function(a) {
     a <- cql2_eval(a)
     stopifnot(is_prop_name(a))
     structure(list(property = a),
-              class = "cql2_prop_ref")
+              class = c("cql2_prop_ref", "list"))
 }
 
 get_all_props <- function(expr) {
@@ -123,7 +124,7 @@ func_def <- function(a) {
     stopifnot(is_func_name(a))
     function(...) {
         structure(list(`function` = list(name = a, args = list(...))),
-                  class = "cql2_func")
+                  class = c("cql2_func", "list"))
     }
 }
 
@@ -197,10 +198,4 @@ cql2_update_ident_env <- function(expr, queryables = NULL, functions = NULL) {
     rm(list = ls(cql2_ident_env, all.names = TRUE), envir = cql2_ident_env)
     list2env(get_all_props(expr), envir = cql2_ident_env) # ENDPOINT: queryables
     list2env(get_all_funcs(expr), envir = cql2_ident_env) # ENDPOINT: functions
-}
-
-to_cql2 <- function(expr) {
-    expr <- unquote(expr, parent.frame())
-    cql2_update_ident_env(expr)
-    cql2_eval(expr)
 }
